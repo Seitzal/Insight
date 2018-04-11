@@ -14,16 +14,16 @@ class ScalastatSuite extends FunSuite {
 
   // Environments
   trait EnvQOG {
-    lazy val qog = Dataset.readCSV("qog_bas_ts_jan18.csv")
+    lazy val qog = Dataset.readCSV("testdata/qog_bas_ts_jan18.csv")
   }
 
   trait EnvFreq {
-    lazy val freq = Dataset.readCSV("freq.csv")
+    lazy val freq = Dataset.readCSV("testdata/freq.csv")
   }
 
   trait EnvDistri {
-    lazy val data1 = Dataset.readCSV("distri1.csv")
-    lazy val data2 = Dataset.readCSV("distri2.csv")
+    lazy val data1 = Dataset.readCSV("testdata/distri1.csv")
+    lazy val data2 = Dataset.readCSV("testdata/distri2.csv")
   }
 
   //Tests
@@ -62,15 +62,15 @@ class ScalastatSuite extends FunSuite {
   }
 
   test("tab function", Out) {
-    println(Dataset.readCSV("test.csv").withRowNumbers.tab)
+    println(Dataset.readCSV("testdata/test.csv").withRowNumbers.tab)
   }
 
   test("tabulate function", Out) {
-    println(Dataset.readCSV("test.csv").withRowNumbers.tabulate)
+    println(Dataset.readCSV("testdata/test.csv").withRowNumbers.tabulate)
   }
 
   test("tabulate function with row numbers read from file", Out) {
-    println(Dataset.readCSV("distri1.csv").tabulate)
+    println(Dataset.readCSV("testdata/distri1.csv").tabulate)
   }
 
   test("Gini index for unclassified data", Distri) {
