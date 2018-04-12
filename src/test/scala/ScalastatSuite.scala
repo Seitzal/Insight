@@ -11,6 +11,7 @@ class ScalastatSuite extends FunSuite {
   object Out extends Tag("Out")
   object Never extends Tag("Never")
   object Distri extends Tag("Distri")
+  object Aggr extends Tag("Aggr")
 
   // Environments
   trait EnvQOG {
@@ -24,6 +25,10 @@ class ScalastatSuite extends FunSuite {
   trait EnvDistri {
     lazy val data1 = Dataset.readCSV("testdata/distri1.csv")
     lazy val data2 = Dataset.readCSV("testdata/distri2.csv")
+  }
+
+  trait EnvAggr {
+    lazy val ratings = Dataset.readCSV("testdata/ratings.csv")
   }
 
   //Tests
@@ -73,23 +78,30 @@ class ScalastatSuite extends FunSuite {
     println(Dataset.readCSV("testdata/distri1.csv").tabulate)
   }
 
-  test("Gini index for unclassified data", Distri) {
+  test("Gini index for unaggregated data", Distri) {
     new EnvDistri {
       assert((data1 num("Umsatz") gini) == 0.432)
       assert((data1 num("Umsatz") ngini) == 0.48)
     }
   }
 
-  test("Gini index for unclassified relative frequencies", Distri) {
+  test("Gini index for unaggregated relative frequencies", Distri) {
     new EnvDistri {
       assert(data1.num("Umsatz").relfreq.gini == 0.432)
       assert(data1.num("Umsatz").relfreq.ngini == 0.48)
     }
   }
 
-  test("Gini index for classified data", Distri) {
+  test("Gini index for aggregated data", Distri) {
     new EnvDistri {
       assert(data2.num("Prozent der Arbeitnehmer").cgini == 0.424) 
+    }
+  }
+
+  test("Fixed-breadth single column aggregation", Aggr) {
+    new EnvAggr {
+      val aggr = ratings.aggrEven("Rating", 1, .5, 10).withRowNumbers
+      println((aggr + ("u", aggr.num("n").relfreq)).tabulate)
     }
   }
   

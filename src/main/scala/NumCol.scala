@@ -97,7 +97,7 @@ case class NumCol (values : Vector[Double]) extends Col {
   }
 
   /**
-   * Calculates the Gini concentration index for an unclassified data column.
+   * Calculates the Gini concentration index for an unaggregated data column.
    * The gini index measures the relative concentration of a frequency distribution.
    * It is defined as the area between the distribution's Lorenz curve and the main diagonal f(x) = x.
    */
@@ -111,13 +111,13 @@ case class NumCol (values : Vector[Double]) extends Col {
   }
 
   /**
-   * Calculates the normalised Gini concentration index for an unclassified data column.
+   * Calculates the normalised Gini concentration index for an unaggregated data column.
    * The result is guaranted to be in [0;1] even for very short / small-n columns.
    */
   lazy val ngini = Helper.round(gini * (length.toDouble / (length.toDouble - 1)))
 
   /**
-   * Calculates the Gini concentration index for a classified data column, assuming equal class breadth and flat distribution within classes.
+   * Calculates the Gini concentration index for an aggregated data column, assuming equal class breadth and flat distribution within classes.
    * The gini index measures the relative concentration of a frequency distribution.
    * It is defined as the area between the distribution's Lorenz curve and the main diagonal f(x) = x.
    */

@@ -192,6 +192,45 @@ class Dataset (columns : Map[String, Col]) {
     case _           => throw new InvalidColException(cname)
   }
 
+  def aggrEven(cname : String, firstCeiling : Double, breadth : Double, k : Int) = getCol(cname) match {
+    
+    case NumCol(col) => {
+      // Generate classes
+      val floor = new FloorBorderedClass(firstCeiling)
+      val mid = for(i <- 0 until k - 2) 
+                yield new DoubleBorderedClass(firstCeiling + i * breadth, firstCeiling + (i + 1) * breadth)
+      val ceil = new CeilingBorderedClass(firstCeiling + (k - 2) * breadth)
+      val classes = floor +: mid.toVector :+ ceil
+
+      //Count number of elements falling into each class
+      def loop(remainder : List[Double], values : Vector[Int]) : Vector[Int] = {
+        def check(x : Double, i : Int, values : Vector[Int]) : Vector[Int] =
+          if(classes(i).contains(x))
+            values.updated(i, values(i) + 1)
+          else
+          check(x, i + 1, values)
+        if(remainder.isEmpty) values
+        else loop(remainder.tail, check(remainder.head, 0, values))
+      }
+      val values_init = for(c <- classes)
+                        yield 0
+      val values = loop(col.toList, values_init.toVector)
+
+      //Generate new dataset
+      val col_classes = new StrCol(
+        for(c <- classes)
+        yield c.desc
+      )
+      val col_values = new NumCol(values.map((x : Int) => x.toDouble))
+      new Dataset(Map(
+        cname -> col_classes,
+        "n"   -> col_values
+      ))
+    }
+    case StrCol(col) => throw new NotNumericException(cname)
+    case _           => throw new InvalidColException(cname)
+  }
+
   /*--- ROW-BASED FUNCTIONS ---*/
 
   /**
