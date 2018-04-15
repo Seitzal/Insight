@@ -25,6 +25,7 @@ class ScalastatSuite extends FunSuite {
   trait EnvDistri {
     lazy val data1 = Dataset.readCSV("testdata/distri1.csv")
     lazy val data2 = Dataset.readCSV("testdata/distri2.csv")
+    lazy val data3 = Dataset.readCSV("testdata/distri3.csv")
   }
 
   trait EnvAggr {
@@ -98,11 +99,35 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
+  test("Robin Hood index", Distri) {
+    val col = new NumCol(Vector(2.5,0.5,0.5,0.5))
+    assert(col.rhi == 1.5 / 4)
+  }
+
+  test("Concentration rate", Distri) {
+    val col = new NumCol(Vector(30, 50, 10, 12, 100, 7, 8))
+    assert(col.crate(3) == 0.8294931)
+  }
+
+  test("Herfindahl index 1", Distri) {
+    new EnvAggr {
+      assert(ratings.num("Rating").herfindahl == 0.0469612)
+    }
+  }
+
+  test("Herfindahl index 2", Distri) {
+    new EnvDistri {
+      assert(data3.num("Neuzulassungen").herfindahl == 0.228056)
+    }
+  }
+
   test("Fixed-breadth single column aggregation", Aggr) {
     new EnvAggr {
       val aggr = ratings.aggrEven("Rating", 1, .5, 10).withRowNumbers
       println((aggr + ("u", aggr.num("n").relfreq)).tabulate)
     }
   }
+
+  
   
 }

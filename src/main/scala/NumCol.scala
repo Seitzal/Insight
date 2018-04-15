@@ -117,7 +117,7 @@ case class NumCol (values : Vector[Double]) extends Col {
   lazy val ngini = Helper.round(gini * (length.toDouble / (length.toDouble - 1)))
 
   /**
-   * Calculates the Gini concentration index for an aggregated data column, assuming equal class breadth and flat distribution within classes.
+   * Calculates the Gini concentration index for an aggregated data column, assuming equal class breadth and even distribution within classes.
    * The gini index measures the relative concentration of a frequency distribution.
    * It is defined as the area between the distribution's Lorenz curve and the main diagonal f(x) = x.
    */
@@ -130,6 +130,33 @@ case class NumCol (values : Vector[Double]) extends Col {
         hstar * (crelfreq.values(i - 1) + crelfreq.values(i))
     }).foldLeft(0.0)(_ + _)) - 1)
   }
+
+  /**
+   * Calculates the column's Robin Hood / Hoover Index of relative concentration.
+   * The RHI is defined as the amount that would need to be redistributed in order to achieve even distribution.
+   */
+  lazy val rhi = {
+    val upperlist = values.filter(_ >= avg)
+    val numerator = upperlist.map((x : Double) => x - avg).foldLeft(0.0)(_ + _)
+    Helper.round(numerator / sum)
+  }
+
+  /**
+   * Calculates the column's concentration rate, defined as the sum of the column's m largest elements divided by the sum of all elements.
+   * @param m The number of elements to include in the numerator sum
+   */
+  def crate (m : Int) = {
+    val numerator = values.sorted.takeRight(m).foldLeft(0.0)(_ + _)
+    Helper.round(numerator / sum.toDouble)
+  }
+
+
+  /** Calculates the Herfindahl index of absolute concentration.
+   *  The Herfindahl index is defined as the sum of the squared relative frequencies of all elements.
+   *  Values for this index range from 1/n (even distribution) to 1 (maximal concentration)
+   */
+  lazy val herfindahl = Helper.round(relfreq.derive((x : Double) => math.pow(x, 2)).sum)
+
 
   lazy val info = (
     "\n"
