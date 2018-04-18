@@ -12,6 +12,7 @@ class ScalastatSuite extends FunSuite {
   object Never extends Tag("Never")
   object Distri extends Tag("Distri")
   object Aggr extends Tag("Aggr")
+  object Correl extends Tag("Correl")
 
   // Environments
   trait EnvQOG {
@@ -30,6 +31,10 @@ class ScalastatSuite extends FunSuite {
 
   trait EnvAggr {
     lazy val ratings = Dataset.readCSV("testdata/ratings.csv")
+  }
+
+  trait EnvCorrel {
+    lazy val data1 = Dataset.readCSV("testdata/correl1.csv")
   }
 
   //Tests
@@ -128,6 +133,23 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  
+  test("Covariance", Correl) {
+    new EnvCorrel {
+      val covxy = data1.cov("X", "Y")
+      assert(Helper.roundTo(covxy, 2) == 7.94)
+    }
+  }
+
+  test("Covariance error case: Different column lengths", Correl) {
+    val brokendata = new Dataset(
+      Map(
+        "X" -> new NumCol(Vector(2,3.0,5)),
+        "Y" -> new NumCol(Vector(3,4,4.5,10))
+      )
+    )
+    assertThrows[ColLengthException] {
+      val covxy = brokendata.num("X") cov brokendata.num("Y")
+    }
+  }
   
 }

@@ -325,6 +325,14 @@ class Dataset (columns : Map[String, Col]) {
     }
   }
 
+  // Multicolumn function shortcuts
+
+  /** Calculates the covariance of two variables in the dataset
+   *  @param cname1 The name of the data column representing the first variable
+   *  @param cname2 The name of the data column representing the second variable
+   */
+  def cov(cname1 : String, cname2 : String) = num(cname1) cov num(cname2)
+
 }
 
 /**

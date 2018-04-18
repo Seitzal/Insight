@@ -157,7 +157,6 @@ case class NumCol (values : Vector[Double]) extends Col {
    */
   lazy val herfindahl = Helper.round(relfreq.derive((x : Double) => math.pow(x, 2)).sum)
 
-
   lazy val info = (
     "\n"
     + "n  = " + length.toString        + "\t\t"
@@ -169,6 +168,21 @@ case class NumCol (values : Vector[Double]) extends Col {
     + "G  = " + gini.toString          + "\t"
     + "G* = " + ngini.toString         + "\n"
   )
+
+  /** Calculates the covariance between the variables represented by this column and another given column
+   *  @param otherCol The data column representing the other variable
+   */
+  def cov(otherCol : NumCol) : Double = {
+    if (length == otherCol.length) {
+      val x = values;
+      val y = otherCol.values;
+      val products = 
+        for (i <- 0 until length)
+        yield x(i) * y(i)
+      val sumofproducts = products.foldLeft(0.0)(_ + _)
+      Helper.round((sumofproducts / length) - (avg * otherCol.avg))             
+    } else throw new ColLengthException("covariance");
+  }
 
   /**
    * Generates a new numeric column from this column by applying the specified function to each of its values.
