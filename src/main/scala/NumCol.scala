@@ -190,6 +190,20 @@ case class NumCol (values : Vector[Double]) extends Col {
   def pearson(otherCol : NumCol) : Double = 
     Helper.round(cov(otherCol) / (standardDev * otherCol.standardDev))
 
+  /** Calculates the partial correlation between this variable and another variable while keeping a third variable constant.
+   *  @param otherCol The data column representing the other variable
+   *  @param controlledCol The data column representing the disturbing variable
+   */
+  def pearsonPartial(otherCol : NumCol, controlledCol : NumCol) : Double = {
+    val xy = this pearson otherCol
+    val xz = this pearson controlledCol
+    val yz = otherCol pearson controlledCol
+    val numerator = xy - xz * yz
+    val root1 = math.sqrt(1 - math.pow(xz, 2))
+    val root2 = math.sqrt(1 - math.pow(yz, 2))
+    Helper.round(numerator / (root1 * root2))
+  }
+
   /**
    * Generates a new numeric column from this column by applying the specified function to each of its values.
    * Behaves analogous to Scala's map()

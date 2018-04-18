@@ -158,5 +158,18 @@ class ScalastatSuite extends FunSuite {
       assert(Helper.roundTo(r, 3) == 0.856)
     }
   }
+
+  test("Partial correlation test 1", Correl) {
+    new EnvCorrel {
+      assert(data1.num("X").pearsonPartial(data1.num("X"), data1.num("Y")) == 1)
+    }
+  }
+
+  test("Partial correlation test 2", Correl) {
+    new EnvCorrel {
+      val xyunderz = data1.pearsonPartial("X", "Y", "Z")
+      assert(Helper.roundTo(xyunderz, 3) == 0.885)
+    }
+  }
   
 }

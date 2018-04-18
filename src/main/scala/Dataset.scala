@@ -339,6 +339,14 @@ class Dataset (columns : Map[String, Col]) {
    */
   def pearson(cname1 : String, cname2 : String) = num(cname1) pearson num(cname2)
 
+  /** Calculates the partial correlation between two variables while keeping a third variable constant.
+   *  @param cname1 The name of the data column representing the first variable
+   *  @param cname2 The name of the data column representing the second variable
+   *  @param cnameControl The name of the data column representing the disturbing variable
+   */
+  def pearsonPartial(cname1 : String, cname2 : String, cnameControl : String) : Double =
+    num(cname1).pearsonPartial(num(cname2), num(cnameControl))
+
 }
 
 /**
