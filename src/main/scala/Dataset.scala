@@ -347,6 +347,14 @@ class Dataset (columns : Map[String, Col]) {
   def pearsonPartial(cname1 : String, cname2 : String, cnameControl : String) : Double =
     num(cname1).pearsonPartial(num(cname2), num(cnameControl))
 
+  /** Performs a simple linear regression using the ordinary least squares method.
+   *  @param cnameDependent The name of the data column representing the dependent variable.
+   *  @param cnameIndependent The name of the data column representing the independent variable.
+   *  @return A tuple containing the regression's y intersect and slope, in that order. 
+   */
+  def ols(cnameDependent : String, cnameIndependent : String) : (Double, Double) =
+    num(cnameDependent) ols num(cnameIndependent)
+
 }
 
 /**

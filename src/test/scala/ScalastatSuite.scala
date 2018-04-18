@@ -35,6 +35,7 @@ class ScalastatSuite extends FunSuite {
 
   trait EnvCorrel {
     lazy val data1 = Dataset.readCSV("testdata/correl1.csv")
+    lazy val data2 = Dataset.readCSV("testdata/correl2.csv")
   }
 
   //Tests
@@ -169,6 +170,14 @@ class ScalastatSuite extends FunSuite {
     new EnvCorrel {
       val xyunderz = data1.pearsonPartial("X", "Y", "Z")
       assert(Helper.roundTo(xyunderz, 3) == 0.885)
+    }
+  }
+
+  test("Simple linear regression", Correl) {
+    new EnvCorrel {
+      val reg = data2.ols("Footprint", "GDP/Capita")
+      assert(Helper.roundTo(reg._1, 3) == 1.199)
+      assert(Helper.roundTo(reg._2, 6) == 0.000148)
     }
   }
   

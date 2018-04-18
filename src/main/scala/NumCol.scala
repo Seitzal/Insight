@@ -204,6 +204,17 @@ case class NumCol (values : Vector[Double]) extends Col {
     Helper.round(numerator / (root1 * root2))
   }
 
+  /** Performs a simple linear regression using the ordinary least squares method.
+   *  The column from which this function is invoked is assumed to represent the dependent variable.
+   *  @param independent The column containing the independent veriable.
+   *  @return A tuple containing the regression's y intersect and slope, in that order. 
+   */
+  def ols(independent : NumCol) : (Double, Double) = {
+    val slope = cov(independent) / independent.variance
+    val yintersect = avg - slope * independent.avg
+    (Helper.round(yintersect), Helper.round(slope))
+  }
+
   /**
    * Generates a new numeric column from this column by applying the specified function to each of its values.
    * Behaves analogous to Scala's map()
