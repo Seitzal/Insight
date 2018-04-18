@@ -162,7 +162,7 @@ class ScalastatSuite extends FunSuite {
 
   test("Partial correlation test 1", Correl) {
     new EnvCorrel {
-      assert(data1.num("X").pearsonPartial(data1.num("X"), data1.num("Y")) == 1)
+      assert(data1.num("X").pearsonPartial(data1.num("Y"), data1.num("Y")) == 0)
     }
   }
 
@@ -178,6 +178,13 @@ class ScalastatSuite extends FunSuite {
       val reg = data2.ols("Footprint", "GDP/Capita")
       assert(Helper.roundTo(reg._1, 3) == 1.199)
       assert(Helper.roundTo(reg._2, 6) == 0.000148)
+    }
+  }
+
+  test("R-squared", Correl) {
+    new EnvCorrel {
+      val rsquared = math.pow(data2.pearson("Footprint", "GDP/Capita"), 2)
+      assert(Helper.roundTo(rsquared, 3) == 0.349)
     }
   }
   
