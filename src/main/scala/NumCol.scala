@@ -169,7 +169,7 @@ case class NumCol (values : Vector[Double]) extends Col {
     + "G* = " + ngini.toString         + "\n"
   )
 
-  /** Calculates the covariance between the variables represented by this column and another given column
+  /** Calculates the covariance for the variables represented by this column and another given column.
    *  @param otherCol The data column representing the other variable
    */
   def cov(otherCol : NumCol) : Double = {
@@ -183,6 +183,12 @@ case class NumCol (values : Vector[Double]) extends Col {
       Helper.round((sumofproducts / length) - (avg * otherCol.avg))             
     } else throw new ColLengthException("covariance");
   }
+
+  /** Calculates pearson's correlation coefficient for the variables represented by this column and another given column.
+   *  @param otherCol The data column representing the other variable
+   */
+  def pearson(otherCol : NumCol) : Double = 
+    Helper.round(cov(otherCol) / (standardDev * otherCol.standardDev))
 
   /**
    * Generates a new numeric column from this column by applying the specified function to each of its values.

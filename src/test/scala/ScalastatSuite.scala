@@ -148,7 +148,14 @@ class ScalastatSuite extends FunSuite {
       )
     )
     assertThrows[ColLengthException] {
-      val covxy = brokendata.num("X") cov brokendata.num("Y")
+      val covxy = brokendata.cov("X", "Y")
+    }
+  }
+
+  test("Pearson's r", Correl) {
+    new EnvCorrel {
+      val r = data1.pearson("X", "Y")
+      assert(Helper.roundTo(r, 3) == 0.856)
     }
   }
   

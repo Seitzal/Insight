@@ -333,6 +333,12 @@ class Dataset (columns : Map[String, Col]) {
    */
   def cov(cname1 : String, cname2 : String) = num(cname1) cov num(cname2)
 
+  /** Calculates Pearson's correlation coefficient for two variables in the dataset
+   *  @param cname1 The name of the data column representing the first variable
+   *  @param cname2 The name of the data column representing the second variable
+   */
+  def pearson(cname1 : String, cname2 : String) = num(cname1) pearson num(cname2)
+
 }
 
 /**
