@@ -16,7 +16,7 @@ case class StrCol (values : Vector[String]) extends Col {
     withtrailingcomma.substring(0, withtrailingcomma.length - 2)
   }
 
-  def derive(func : String => Double) = new NumCol(values.map(func).map(Helper.round))
+  def derive(func : String => Double) = new NumCol(values.map((x : String) => Option(Helper.round(func(x)))))
   def deriveStr(func : String => String) = new StrCol(values.map(func))
 
 }

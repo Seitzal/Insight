@@ -23,7 +23,7 @@ class Dataset (columns : Map[String, Col]) {
   /**
    * A list of all columns in the dataset, as tuples of their variable name and the actual column.
    * Used internally for data formatting.
-   * If an row number column exists, it will always be at index 0.
+   * If a row number column exists, it will always be at index 0.
    * Any numeric columns containing only integers will be converted to string columns, with the values lacking any decimal places.
    */
   lazy val colTuples : List[(String, Col)] = {
@@ -41,7 +41,7 @@ class Dataset (columns : Map[String, Col]) {
       rawcol match {
         case NumCol(values) => {
           if((values.map(Helper.isInt).foldLeft(true)(_ && _)))
-            (coltuple._1, new StrCol(values.map((x: Double) => x.toInt.toString)))
+            (coltuple._1, new StrCol(values.map((x: Option[Double]) => Helper.toIntString(x))))
           else
             coltuple
         }
@@ -132,7 +132,7 @@ class Dataset (columns : Map[String, Col]) {
   def withRowNumbers = {
     val unmapped = columns.toList
     val rownumbers = new NumCol(
-      (for(i <- 1 to unmapped.head._2.length) yield i.toDouble).toVector
+      (for(i <- 1 to unmapped.head._2.length) yield Option(i.toDouble)).toVector
     )
     new Dataset((("#", rownumbers) :: unmapped).toMap)
   }
@@ -171,7 +171,7 @@ class Dataset (columns : Map[String, Col]) {
    */
   def filter(cname : String, value : Double) : Dataset = getCol(cname) match {
     case NumCol(col) => {
-      val rownums = for(i <- 0 until col.length if col(i) == value) yield i
+      val rownums = for(i <- 0 until col.length if col(i).getOrElse(null) == value) yield i
       val newmap = for((n, c) <- columns) yield {
         val newc = c match {
           case NumCol(v) => {
@@ -194,7 +194,7 @@ class Dataset (columns : Map[String, Col]) {
 
   def aggrEven(cname : String, firstCeiling : Double, breadth : Double, k : Int) = getCol(cname) match {
     
-    case NumCol(col) => {
+    case col : NumCol => {
       // Generate classes
       val floor = new FloorBorderedClass(firstCeiling)
       val mid = for(i <- 0 until k - 2) 
@@ -214,14 +214,14 @@ class Dataset (columns : Map[String, Col]) {
       }
       val values_init = for(c <- classes)
                         yield 0
-      val values = loop(col.toList, values_init.toVector)
+      val values = loop(col.existingValues.toList, values_init.toVector)
 
       //Generate new dataset
       val col_classes = new StrCol(
         for(c <- classes)
         yield c.desc
       )
-      val col_values = new NumCol(values.map((x : Int) => x.toDouble))
+      val col_values = new NumCol(values.map((x : Int) => Option(x.toDouble)))
       new Dataset(Map(
         cname -> col_classes,
         "n"   -> col_values
@@ -399,10 +399,19 @@ object Dataset {
    * Infers the datatype of a column from its values, and returns either a NumCol if all values are numeric, or a StrCol if otherwise.
    */
   private def parseCol(raw : List[String]) : Col = {
-    val numtry = Try{for (entry <- raw) yield entry.toDouble}.toOption
-    numtry match {
-      case Some(x) => new NumCol(x.toVector)
-      case None    => new StrCol(raw.toVector)
-    }
+    def tryconvert (item : String) : Option[Option[Double]] =
+      if (item == "" || item == "-") Option(None)
+      else {
+        val tryconvert2 = Try{item.toDouble}.toOption
+        tryconvert2 match {
+          case Some(x) => Option(tryconvert2)
+          case None    => None
+        }
+      }
+    val triedlist = raw.map(tryconvert)
+    if(triedlist.forall(_.isDefined))
+      new NumCol(triedlist.map(_.get).toVector)
+    else
+      new StrCol(raw.toVector)
   }
 }
