@@ -13,6 +13,7 @@ class ScalastatSuite extends FunSuite {
   object Distri extends Tag("Distri")
   object Aggr extends Tag("Aggr")
   object Correl extends Tag("Correl")
+  object MissingVals extends Tag("Missingvals")
 
   // Environments
   trait EnvQOG {
@@ -38,12 +39,16 @@ class ScalastatSuite extends FunSuite {
     lazy val data2 = Dataset.readCSV("testdata/correl2.csv")
   }
 
+  trait EnvMissingVals {
+    lazy val data = Dataset.readCSV("testdata/missingvals.csv")
+  }
+
   //Tests
   test("Cumulative absolute frequencies", Freq) {
     new EnvFreq {
       val cf = freq.num("Anzahl").cabsfreq
       assert(
-        cf.values(cf.values.length - 1) == freq.num("Anzahl").sum
+        cf.values(cf.values.length - 1).get == freq.num("Anzahl").sum
       )
     }
   }
@@ -106,12 +111,12 @@ class ScalastatSuite extends FunSuite {
   }
 
   test("Robin Hood index", Distri) {
-    val col = new NumCol(Vector(2.5,0.5,0.5,0.5))
+    val col = NumCol.make(Vector(2.5,0.5,0.5,0.5))
     assert(col.rhi == 1.5 / 4)
   }
 
   test("Concentration rate", Distri) {
-    val col = new NumCol(Vector(30, 50, 10, 12, 100, 7, 8))
+    val col = NumCol.make(Vector(30, 50, 10, 12, 100, 7, 8))
     assert(col.crate(3) == 0.8294931)
   }
 
@@ -144,8 +149,8 @@ class ScalastatSuite extends FunSuite {
   test("Covariance error case: Different column lengths", Correl) {
     val brokendata = new Dataset(
       Map(
-        "X" -> new NumCol(Vector(2,3.0,5)),
-        "Y" -> new NumCol(Vector(3,4,4.5,10))
+        "X" -> NumCol.make(Vector(2,3.0,5)),
+        "Y" -> NumCol.make(Vector(3,4,4.5,10))
       )
     )
     assertThrows[ColLengthException] {
@@ -187,5 +192,13 @@ class ScalastatSuite extends FunSuite {
       assert(Helper.roundTo(rsquared, 3) == 0.349)
     }
   }
-  
+ 
+  test("Missing Values", MissingVals) {
+    new EnvMissingVals {
+      val a = data.num("A")
+      val b = data.num("B")
+      val c = data.num("C")
+      println(data.withRowNumbers.tab)
+    }
+  }
 }

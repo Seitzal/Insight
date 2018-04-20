@@ -2,7 +2,11 @@ package seitzal.scalastat
 
 object Helper {
 
-  def isInt(x : Double) = (x.toInt - x == 0.0)
+  def isInt(x : Option[Double]) = (x.getOrElse(0.0).toInt - x.getOrElse(0.0) == 0.0)
+  def toIntString(x : Option[Double]) = x match {
+    case Some(n) => n.toInt.toString
+    case None    => "-"
+  }
 
   def round(x : Double) : Double = math.round(x * 10000000d).asInstanceOf[Double] / 10000000d
   def roundTo(x : Double, decimals : Int) = {

@@ -6,14 +6,26 @@ import scala.annotation.tailrec
  * Represents a data column containing only numeric values (quantifiable on an interval or ratio scale).
  * Missing values are not currently supported.
  */
-case class NumCol (values : Vector[Double]) extends Col {
+case class NumCol (values : Vector[Option[Double]]) extends Col {
 
   lazy val length = values.length
 
-  lazy val asStrList = for(e <- values.toList) yield e.toString
+  lazy val existingValues =
+    values withFilter {
+      case Some(value) => true
+      case None        => false
+    } map (_.get)
 
+  lazy val existingLength = existingValues.length
+
+  lazy val asStrList = 
+    for(e <- values.toList) yield e match {
+      case Some(value) => value.toString
+      case None        => "-"
+    }
+      
   override def toString = {
-    val withtrailingcomma = (for(e <- values) yield e.toString + ", ").mkString
+    val withtrailingcomma = (for(e <- asStrList) yield e + ", ").mkString
     withtrailingcomma.substring(0, withtrailingcomma.length - 2)
   }
 
@@ -21,22 +33,21 @@ case class NumCol (values : Vector[Double]) extends Col {
    * The sum of all values of the column.
    * @return The sum of the column.
    */
-  lazy val sum = Helper.round(values.foldLeft(0.0)(_ + _))
+  lazy val sum = Helper.round(existingValues.foldLeft(0.0)(_ + _))
 
   /**
    * The arithmetic mean of all values of the column.
    */
-  lazy val avg = Helper.round(sum / values.length)
+  lazy val avg = Helper.round(sum / existingLength)
 
-  
-  private lazy val sortedvs = values.sorted
+  private lazy val sortedvs = existingValues.sorted
 
   /**
    * The median value of the column.
    */
-  lazy val median = (length % 2) match {
-    case 1 => sortedvs(length / 2)
-    case 0 => (sortedvs(length / 2 - 1) + sortedvs(length / 2)) / 2
+  lazy val median = (existingLength % 2) match {
+    case 1 => sortedvs(existingLength / 2)
+    case 0 => (sortedvs(existingLength / 2 - 1) + sortedvs(existingLength / 2)) / 2
   }
 
   /**
@@ -63,6 +74,8 @@ case class NumCol (values : Vector[Double]) extends Col {
   /**
    * A derived column containing the relative frequencies corresponding to the absolute frequencies in the column.
    * This only generates meaningful data if the original column contained absolute frequencies.
+   * 
+   * This function will return 0s in place of empty values to facilitate followup steps, such as cumulation.
    */
   lazy val relfreq = derive(_ / sum)
 
@@ -78,7 +91,7 @@ case class NumCol (values : Vector[Double]) extends Col {
         val crf = remainder.head + prev
         loop(remainder.tail, acc :+ crf, crf)
       }
-    new NumCol(loop(relfreq.values.toList, Vector[Double](), 0).map(Helper.round))
+    new NumCol(loop(relfreq.values.toList.map(_.getOrElse(0.0)), Vector[Double](), 0).map(Helper.round).map(Option(_)))
   }
 
   /**
@@ -93,7 +106,7 @@ case class NumCol (values : Vector[Double]) extends Col {
         val crf = remainder.head + prev
         loop(remainder.tail, acc :+ crf, crf)
       }
-    new NumCol(loop(values.toList, Vector[Double](), 0).map(Helper.round))
+    new NumCol(loop(values.toList.map(_.getOrElse(0.0)), Vector[Double](), 0).map(Helper.round).map(Option(_)))
   }
 
   /**
@@ -103,18 +116,18 @@ case class NumCol (values : Vector[Double]) extends Col {
    */
   lazy val gini = {
     val numerator = 2 * (
-      (for (i <- 0 until length) yield (i + 1) * values(i))
+      (for (i <- 0 until existingLength) yield (i + 1) * existingValues(i))
       .foldLeft(0.0)(_ + _)
     )
-    val subtrahend = (length.toDouble + 1) / length.toDouble
-    Helper.round(numerator / (sum * length) - subtrahend)
+    val subtrahend = (existingLength.toDouble + 1) / existingLength.toDouble
+    Helper.round(numerator / (sum * existingLength) - subtrahend)
   }
 
   /**
    * Calculates the normalised Gini concentration index for an unaggregated data column.
    * The result is guaranted to be in [0;1] even for very short / small-n columns.
    */
-  lazy val ngini = Helper.round(gini * (length.toDouble / (length.toDouble - 1)))
+  lazy val ngini = Helper.round(gini * (existingLength.toDouble / (existingLength.toDouble - 1)))
 
   /**
    * Calculates the Gini concentration index for an aggregated data column, assuming equal class breadth and even distribution within classes.
@@ -122,12 +135,16 @@ case class NumCol (values : Vector[Double]) extends Col {
    * It is defined as the area between the distribution's Lorenz curve and the main diagonal f(x) = x.
    */
   lazy val cgini = {
+    values.map {
+      case None    => throw new MissingValueException("aggregate Gini index")
+      case _       => 0
+    }
     val hstar = 1 / length.toDouble
     Helper.round(((for (i <- 0 until length) yield {
       if(i == 0)
-        hstar * crelfreq.values(i)
+        hstar * crelfreq.values(i).get
       else
-        hstar * (crelfreq.values(i - 1) + crelfreq.values(i))
+        hstar * (crelfreq.values(i - 1).get + crelfreq.values(i).get)
     }).foldLeft(0.0)(_ + _)) - 1)
   }
 
@@ -136,7 +153,7 @@ case class NumCol (values : Vector[Double]) extends Col {
    * The RHI is defined as the amount that would need to be redistributed in order to achieve even distribution.
    */
   lazy val rhi = {
-    val upperlist = values.filter(_ >= avg)
+    val upperlist = existingValues.filter(_ >= avg)
     val numerator = upperlist.map((x : Double) => x - avg).foldLeft(0.0)(_ + _)
     Helper.round(numerator / sum)
   }
@@ -146,7 +163,7 @@ case class NumCol (values : Vector[Double]) extends Col {
    * @param m The number of elements to include in the numerator sum
    */
   def crate (m : Int) = {
-    val numerator = values.sorted.takeRight(m).foldLeft(0.0)(_ + _)
+    val numerator = existingValues.sorted.takeRight(m).foldLeft(0.0)(_ + _)
     Helper.round(numerator / sum.toDouble)
   }
 
@@ -170,12 +187,20 @@ case class NumCol (values : Vector[Double]) extends Col {
   )
 
   /** Calculates the covariance for the variables represented by this column and another given column.
+   *  This ignores any rows with missing values in either column.
    *  @param otherCol The data column representing the other variable
    */
   def cov(otherCol : NumCol) : Double = {
     if (length == otherCol.length) {
-      val x = values;
-      val y = otherCol.values;
+      val rawx = values;
+      val rawy = otherCol.values;
+      val intactrows = for(
+        i <- 0 until length 
+        if (rawx(i).isDefined && rawy(i).isDefined)
+      ) yield (rawx(i).get, rawy(i).get)
+      val intactlength = intactrows.length
+      val x = intactrows.unzip._1
+      val y = intactrows.unzip._2
       val products = 
         for (i <- 0 until length)
         yield x(i) * y(i)
@@ -221,7 +246,14 @@ case class NumCol (values : Vector[Double]) extends Col {
    * @param func The function to apply to each value
    * @return The derived numeric column
    */
-  def derive(func : Double => Double) = new NumCol(values.map(func).map(Helper.round))
+  def derive(func : Double => Double) =
+    new NumCol (
+      for(e <- values) yield e match {
+        case Some(x) => Option(Helper.round(func(x)))
+        case None    => None
+      }
+    )
+
 
  /**
    * Generates a new non-numeric column from this column by applying the specified function to each of its values.
@@ -229,6 +261,15 @@ case class NumCol (values : Vector[Double]) extends Col {
    * @param func The function to apply to each value
    * @return The derived non-numeric column
    */
-  def deriveStr(func : Double => String) = new StrCol(values.map(func))
+  def deriveStr(func : Double => String) =
+    new StrCol (
+      for(e <- values) yield e match {
+        case Some(x) => func(x)
+        case None    => "-" 
+      }
+    )
+}
 
+object NumCol {
+  def make(values : Vector[Double]) = new NumCol(values.map(Option(_)))
 }
