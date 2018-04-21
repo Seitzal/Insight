@@ -111,12 +111,12 @@ class ScalastatSuite extends FunSuite {
   }
 
   test("Robin Hood index", Distri) {
-    val col = NumCol.make(Vector(2.5,0.5,0.5,0.5))
+    val col = NumCol(2.5,0.5,0.5,0.5)
     assert(col.rhi == 1.5 / 4)
   }
 
   test("Concentration rate", Distri) {
-    val col = NumCol.make(Vector(30, 50, 10, 12, 100, 7, 8))
+    val col = NumCol(30, 50, 10, 12, 100, 7, 8)
     assert(col.crate(3) == 0.8294931)
   }
 
@@ -149,8 +149,8 @@ class ScalastatSuite extends FunSuite {
   test("Covariance error case: Different column lengths", Correl) {
     val brokendata = new Dataset(
       Map(
-        "X" -> NumCol.make(Vector(2,3.0,5)),
-        "Y" -> NumCol.make(Vector(3,4,4.5,10))
+        "X" -> NumCol(2,3.0,5),
+        "Y" -> NumCol(3,4,4.5,10)
       )
     )
     assertThrows[ColLengthException] {

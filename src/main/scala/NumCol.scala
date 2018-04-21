@@ -271,5 +271,5 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
 }
 
 object NumCol {
-  def make(values : Vector[Double]) = new NumCol(values.map(Option(_)))
+  def apply(values : Double*) = new NumCol(values.map(Option(_)).toVector)
 }
