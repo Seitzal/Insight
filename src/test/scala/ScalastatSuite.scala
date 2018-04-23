@@ -13,7 +13,7 @@ class ScalastatSuite extends FunSuite {
   object Distri extends Tag("Distri")
   object Aggr extends Tag("Aggr")
   object Correl extends Tag("Correl")
-  object MissingVals extends Tag("Missingvals")
+  object MissingVals extends Tag("MissingVals")
 
   // Environments
   trait EnvQOG {
@@ -199,6 +199,19 @@ class ScalastatSuite extends FunSuite {
       val b = data.num("B")
       val c = data.num("C")
       println(data.withRowNumbers.tab)
+    }
+  }
+
+  test("Common existing length", MissingVals) {
+    new EnvMissingVals {
+      assert(data.num("B").commonExistingLength(data.num("C")) == 3)
+    }
+  }
+
+  test("Common existing values", MissingVals) {
+    new EnvMissingVals {
+      assert(data.num("B").commonExistingValues(data.num("C")) ==
+        (Vector(3.5, 3.0, 3.0), Vector(12.0, 0.4, 2.4)))
     }
   }
 }

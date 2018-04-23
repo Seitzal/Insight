@@ -17,6 +17,34 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
     } map (_.get)
 
   lazy val existingLength = existingValues.length
+  
+  def commonExistingValues(that : NumCol) : (Vector[Double], Vector[Double]) = {
+    val shorterLength =
+      if(this.length <= that.length) this.length
+      else that.length
+    def iter(x1 : Vector[Double], x2 : Vector[Double], i : Int) : (Vector[Double], Vector[Double]) = 
+      if(i == shorterLength)
+        (x1, x2)
+      else if(this.values(i).isDefined && that.values(i).isDefined)
+        iter(x1 :+ this.values(i).get, x2 :+ that.values(i).get, i + 1)
+      else
+        iter(x1, x2, i + 1)
+    iter(Vector[Double](), Vector[Double](), 0)
+  }
+
+  def commonExistingLength(that : NumCol) : Int = {
+    val shorterLength =
+      if(this.length <= that.length) this.length
+      else that.length
+    def iter(n : Int, i : Int) : Int =
+      if(i == shorterLength)
+        n
+      else if(this.values(i).isDefined && that.values(i).isDefined)
+        iter(n + 1, i + 1)
+      else
+        iter(n, i + 1)
+    iter(0, 0)
+ }
 
   lazy val asStrList = 
     for(e <- values.toList) yield e match {
