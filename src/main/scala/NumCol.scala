@@ -32,6 +32,11 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
     iter(Vector[Double](), Vector[Double](), 0)
   }
 
+  def commonExistingCols(that : NumCol) : (NumCol, NumCol) = {
+    val commonExistingValues = this.commonExistingValues(that) 
+    (new NumCol(commonExistingValues._1.map(Option(_))), new NumCol(commonExistingValues._2.map(Option(_)))) 
+  }
+
   def commonExistingLength(that : NumCol) : Int = {
     val shorterLength =
       if(this.length <= that.length) this.length
