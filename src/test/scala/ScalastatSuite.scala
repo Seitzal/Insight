@@ -9,11 +9,14 @@ class ScalastatSuite extends FunSuite {
   object FSS extends Tag("FSS")
   object Freq extends Tag("Freq")
   object Out extends Tag("Out")
-  object Never extends Tag("Never")
   object Distri extends Tag("Distri")
   object Aggr extends Tag("Aggr")
   object Correl extends Tag("Correl")
   object MissingVals extends Tag("MissingVals")
+
+  // Utility tags
+  object Never extends Tag("Never")
+  object Slow extends Tag("Slow")
 
   // Environments
   trait EnvQOG {
@@ -53,7 +56,7 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  test("filtered subset", FSS) {
+  test("filtered subset", FSS, Slow) {
     new EnvQOG {
       println (
         qog
@@ -66,7 +69,7 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  test("sorted subset", FSS) {
+  test("sorted subset", FSS, Slow) {
     new EnvQOG {
       println (
         qog
@@ -132,7 +135,7 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  test("Fixed-breadth single column aggregation", Aggr) {
+  test("Fixed-width single column aggregation", Aggr) {
     new EnvAggr {
       val aggr = ratings.aggrEven("Rating", 1, .5, 10).withRowNumbers
       println((aggr + ("u", aggr.num("n").relfreq)).tabulate)
@@ -150,6 +153,15 @@ class ScalastatSuite extends FunSuite {
     new EnvCorrel {
       val r = data1.pearson("X", "Y")
       assert(Helper.roundTo(r, 3) == 0.856)
+    }
+  }
+
+  test("Pearson's r for large dataset", Correl, Slow) {
+    new EnvQOG {
+      val r = qog.pearson("rsf_pfi", "wef_ptp")
+      assert(Helper.roundTo(r, 4) == -0.0799)
+      val r2 = qog.pearson("wdi_gdpcapcon2010", "undp_hdi")
+      assert(Helper.roundTo(r2, 3) == 0.69)
     }
   }
 

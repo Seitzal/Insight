@@ -69,9 +69,18 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
   lazy val sum = Helper.round(existingValues.foldLeft(0.0)(_ + _))
 
   /**
+   * The unrounded sum of all values in the column.
+   * This will most likely result in weird periodic outputs.
+   * For most operations, sum should be used.
+   * However, when dealing with very large numbers, the internal rounding function can cause severe errors.
+   * In such cases, safeSum provides a working sum that can be used for calculations.
+   */
+  lazy val safeSum = existingValues.foldLeft(0.0)(_ + _)
+
+  /**
    * The arithmetic mean of all values of the column.
    */
-  lazy val avg = Helper.round(sum / existingLength)
+  lazy val avg = Helper.round(safeSum / existingLength)
 
   private lazy val sortedvs = existingValues.sorted
 
@@ -91,13 +100,13 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
   /**
    * A derived column containing the squared deviations of each element in the column from the arithmetic mean
    */
-  lazy val devsSquared = derive((x : Double) => math.pow(x - avg, 2))
+  lazy val devsSquared = derive((x : Double) => (x - avg) * (x - avg))
 
   /**
    * The variance of the column.
    * (The variance is the arithmetic mean of the squared deviations of each element from the arithmetic mean of the column)
    */
-  lazy val variance = Helper.round(devsSquared.avg)
+  lazy val variance = devsSquared.avg
 
   /**
    * The standard deviation of the column, defined as the square root of the column's variance

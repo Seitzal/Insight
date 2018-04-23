@@ -192,14 +192,14 @@ class Dataset (columns : Map[String, Col]) {
     case _           => throw new InvalidColException(cname)
   }
 
-  def aggrEven(cname : String, firstCeiling : Double, breadth : Double, k : Int) = getCol(cname) match {
+  def aggrEven(cname : String, firstCeiling : Double, width : Double, k : Int) = getCol(cname) match {
     
     case col : NumCol => {
       // Generate classes
       val floor = new FloorBorderedClass(firstCeiling)
       val mid = for(i <- 0 until k - 2) 
-                yield new DoubleBorderedClass(firstCeiling + i * breadth, firstCeiling + (i + 1) * breadth)
-      val ceil = new CeilingBorderedClass(firstCeiling + (k - 2) * breadth)
+                yield new DoubleBorderedClass(firstCeiling + i * width, firstCeiling + (i + 1) * width)
+      val ceil = new CeilingBorderedClass(firstCeiling + (k - 2) * width)
       val classes = floor +: mid.toVector :+ ceil
 
       //Count number of elements falling into each class
