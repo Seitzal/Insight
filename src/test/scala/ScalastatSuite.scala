@@ -146,18 +146,6 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  test("Covariance error case: Different column lengths", Correl) {
-    val brokendata = new Dataset(
-      Map(
-        "X" -> NumCol(2,3.0,5),
-        "Y" -> NumCol(3,4,4.5,10)
-      )
-    )
-    assertThrows[ColLengthException] {
-      val covxy = brokendata.cov("X", "Y")
-    }
-  }
-
   test("Pearson's r", Correl) {
     new EnvCorrel {
       val r = data1.pearson("X", "Y")

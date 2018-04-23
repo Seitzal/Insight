@@ -224,29 +224,23 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
    *  @param otherCol The data column representing the other variable
    */
   def cov(otherCol : NumCol) : Double = {
-    if (length == otherCol.length) {
-      val rawx = values;
-      val rawy = otherCol.values;
-      val intactrows = for(
-        i <- 0 until length 
-        if (rawx(i).isDefined && rawy(i).isDefined)
-      ) yield (rawx(i).get, rawy(i).get)
-      val intactlength = intactrows.length
-      val x = intactrows.unzip._1
-      val y = intactrows.unzip._2
-      val products = 
-        for (i <- 0 until length)
-        yield x(i) * y(i)
-      val sumofproducts = products.foldLeft(0.0)(_ + _)
-      Helper.round((sumofproducts / length) - (avg * otherCol.avg))             
-    } else throw new ColLengthException("covariance");
+    val commexc = commonExistingCols(otherCol)
+    val xs = commexc._1.existingValues
+    val ys = commexc._2.existingValues
+    val l = xs.length
+    val products =
+      for (i <- 0 until l)
+      yield xs(i) * ys(i)
+    Helper.round((products.foldLeft(0.0)(_ + _) / l) - commexc._1.avg * commexc._2.avg)
   }
 
   /** Calculates pearson's correlation coefficient for the variables represented by this column and another given column.
    *  @param otherCol The data column representing the other variable
    */
-  def pearson(otherCol : NumCol) : Double = 
-    Helper.round(cov(otherCol) / (standardDev * otherCol.standardDev))
+  def pearson(otherCol : NumCol) : Double = {
+    val commexc = commonExistingCols(otherCol)
+    Helper.round(cov(otherCol) / (commexc._1.standardDev * commexc._2.standardDev))
+  }
 
   /** Calculates the partial correlation between this variable and another variable while keeping a third variable constant.
    *  @param otherCol The data column representing the other variable
