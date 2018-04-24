@@ -112,6 +112,26 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
    * The standard deviation of the column, defined as the square root of the column's variance
    */
   lazy val standardDev = Helper.round(math.sqrt(variance))
+  
+  /**
+   * Calculates the n-th central moment of a normal distribution
+   * @param n the degree of the central moment
+   */
+  def centralMoment(n : Int) = {
+    val items = for(x <- existingValues)
+                yield math.pow((x - avg), n)
+    Helper.round(items.foldLeft(0.0)(_ + _) / existingLength)
+  }
+
+  /**
+   * Calculates the skewness of a normal distribution
+   */
+  lazy val skewness = Helper.round(centralMoment(3) / (variance * standardDev))
+
+  /**
+   * Calculates the kurtosis of a normal distribution
+   */
+  lazy val kurtosis = Helper.round(centralMoment(4) / (variance * variance) - 3)
 
   /**
    * A derived column containing the relative frequencies corresponding to the absolute frequencies in the column.
@@ -276,6 +296,14 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
     (Helper.round(yintersect), Helper.round(slope))
   }
 
+  /** Calculates the determination coefficient R² for simple linear regression from another variable to the variable in this column.
+   *  This is equivalent to the squared Pearson r.
+   */
+  def rsq(independent : NumCol) : Double = {
+    val r = pearson(independent)
+    r * r
+  }
+
   /**
    * Generates a new numeric column from this column by applying the specified function to each of its values.
    * Behaves analogous to Scala's map()
@@ -289,7 +317,6 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
         case None    => None
       }
     )
-
 
  /**
    * Generates a new non-numeric column from this column by applying the specified function to each of its values.

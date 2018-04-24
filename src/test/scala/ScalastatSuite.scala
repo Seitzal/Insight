@@ -135,6 +135,18 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
+  test("Skewness", Distri) {
+    new EnvAggr {
+      assert(Helper.roundTo(ratings.num("Rating").skewness, 3) == -0.539)
+    }
+  }
+
+  test("Kurtosis", Distri) {
+    new EnvAggr {
+      assert(Helper.roundTo(ratings.num("Rating").kurtosis, 3) == -0.292)
+    }
+  }
+
   test("Fixed-width single column aggregation", Aggr) {
     new EnvAggr {
       val aggr = ratings.aggrEven("Rating", 1, .5, 10).withRowNumbers
