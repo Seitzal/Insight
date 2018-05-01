@@ -93,6 +93,28 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
   }
 
   /**
+   * The largest value in the column.
+   */
+  lazy val max = {
+    def iter(xs : List[Double], current : Double) : Double =
+      if (xs.isEmpty) current
+      else if (xs.head > current) iter(xs.tail, xs.head)
+      else iter(xs.tail, current)
+    iter(existingValues.toList, existingValues.head)
+  }
+
+  /**
+   * The smallest value in the column.
+   */
+  lazy val min = {
+    def iter(xs : List[Double], current : Double) : Double =
+      if (xs.isEmpty) current
+      else if (xs.head < current) iter(xs.tail, xs.head)
+      else iter(xs.tail, current)
+    iter(existingValues.toList, existingValues.head)
+  }
+
+  /**
    * A derived column containing the deviations of each element in the column from the arithmetic mean
    */
   lazy val devs = derive(_ - avg)
