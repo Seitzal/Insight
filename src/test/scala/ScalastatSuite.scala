@@ -5,19 +5,6 @@ import seitzal.scalastat._
 
 class ScalastatSuite extends FunSuite {
 
-  // Tags
-  object FSS extends Tag("FSS")
-  object Freq extends Tag("Freq")
-  object Out extends Tag("Out")
-  object Distri extends Tag("Distri")
-  object Aggr extends Tag("Aggr")
-  object Correl extends Tag("Correl")
-  object MissingVals extends Tag("MissingVals")
-
-  // Utility tags
-  object Never extends Tag("Never")
-  object Slow extends Tag("Slow")
-
   // Environments
   trait EnvQOG {
     lazy val qog = Dataset.readCSV("testdata/qog_bas_ts_jan18.csv")
@@ -56,7 +43,7 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  test("filtered subset", FSS, Slow) {
+  test("filtered subset", FSS, NoJenkins, Slow) {
     new EnvQOG {
       println (
         qog
@@ -69,7 +56,7 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  test("sorted subset", FSS, Slow) {
+  test("sorted subset", FSS, NoJenkins, Slow) {
     new EnvQOG {
       println (
         qog
@@ -81,15 +68,15 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  test("tab function", Out) {
+  test("tab function", Out, NoJenkins) {
     println(Dataset.readCSV("testdata/test.csv").withRowNumbers.tab)
   }
 
-  test("tabulate function", Out) {
+  test("tabulate function", Out, NoJenkins) {
     println(Dataset.readCSV("testdata/test.csv").withRowNumbers.tabulate)
   }
 
-  test("tabulate function with row numbers read from file", Out) {
+  test("tabulate function with row numbers read from file", Out, NoJenkins) {
     println(Dataset.readCSV("testdata/distri1.csv").tabulate)
   }
 
@@ -147,7 +134,7 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  test("Fixed-width single column aggregation", Aggr) {
+  test("Fixed-width single column aggregation", Aggr, NoJenkins) {
     new EnvAggr {
       val aggr = ratings.aggrEven("Rating", 1, .5, 10).withRowNumbers
       println((aggr + ("u", aggr.num("n").relfreq)).tabulate)
@@ -205,7 +192,7 @@ class ScalastatSuite extends FunSuite {
     }
   }
  
-  test("Missing Values", MissingVals) {
+  test("Missing Values", MissingVals, NoJenkins) {
     new EnvMissingVals {
       val a = data.num("A")
       val b = data.num("B")
