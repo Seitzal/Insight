@@ -155,7 +155,7 @@ class ScalastatSuite extends FunSuite {
     }
   }
 
-  test("Pearson's r for large dataset", Correl, Slow) {
+  test("Pearson's r for large dataset", Correl, NoJenkins, Slow) {
     new EnvQOG {
       val r = qog.pearson("rsf_pfi", "wef_ptp")
       assert(Helper.roundTo(r, 4) == -0.0799)
