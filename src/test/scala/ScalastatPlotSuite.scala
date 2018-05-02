@@ -9,7 +9,14 @@ import seitzal.scalastat.plot._
 
 class ScalastatPlotSuite extends FunSuite {
 
-  test("Test Plot 1", new Tag("TestPlot")) {
+  object plot extends Tag("Plot")
+
+  def cross(g : Graphics, x : Int, y : Int) {
+    g.drawLine(x - 2, y + 2, x + 2, y - 2)
+    g.drawLine(x - 2, y - 2, x + 2, y + 2)
+  }
+
+  test("Test Plot 1", new Tag("TestPlot"), plot) {
     def draw (g : Graphics) {
     g.fillRect(0, 0, 300, 300)
     g.setColor(Color.red)
@@ -19,17 +26,14 @@ class ScalastatPlotSuite extends FunSuite {
     testplot.show
   }
 
-  test("Scatterplot 1", new Tag("Scatterplot")) {
+  test("Scatterplot 1", new Tag("Scatterplot"), plot) {
     val data = Dataset.readCSV("testdata/correl1.csv")
-    val scatter = new ScatterPlot(data.num("X"), data.num("Y"), "X", "Y")
-    scatter.show
+    ScatterPlot(data, "X", "Y").show
   }
 
-  test("Scatterplot 2", new Tag("Scatterplot2")) {
-    val data = Dataset.readCSV("testdata/qog_bas_ts_jan18.csv").filter("year", 2006)
-    println("data read")
-    val scatter = new ScatterPlot(data.num("wdi_gdpcapcon2010"), data.num("undp_hdi"), "GDP/Capita", "HDI")
-    scatter.show
+  test("Scatterplot 2", new Tag("Scatterplot2"), plot) {
+    val data = Dataset.readCSV("testdata/qog_bas_ts_jan18.csv")
+    ScatterPlot(data, "wdi_gdpcapcon2010", "undp_hdi", Symbol.DOT).show
   }
 
 }
