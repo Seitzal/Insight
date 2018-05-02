@@ -26,7 +26,8 @@ abstract class Plot {
 
 /**
  * Dummy class for fast creation of simple, custom plots.
- * For more complex applications, it is preferred to create a new child of [[seitzal.scalastat.plot.Plot]]
+ * For more complex applications, it is preferred to create a new child class of [[seitzal.scalastat.plot.Plot]]
+ */
 class CustomPlot (p_width : Int, p_height : Int, p_title : String, drawer : (Graphics) => Unit) extends Plot {
   override val width = p_width
   override val height = p_height
