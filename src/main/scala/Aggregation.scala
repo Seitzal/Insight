@@ -1,4 +1,4 @@
-package seitzal.scalastat
+package eu.seitzal.scalastat
 
 trait BorderedClass{
   def contains(x : Double) : Boolean

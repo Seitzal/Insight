@@ -1,4 +1,4 @@
-package seitzal.scalastat.test
+package eu.seitzal.scalastat.test
 
 import org.scalatest._
 

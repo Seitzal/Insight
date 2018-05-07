@@ -1,4 +1,4 @@
-package seitzal.funcsv
+package eu.seitzal.funcsv
 
 import scala.annotation.tailrec
 import scala.io.Source

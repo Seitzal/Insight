@@ -1,8 +1,8 @@
-package seitzal.scalastat
+package eu.seitzal.scalastat
 
 import scala.util.Try
 
-import seitzal.funcsv.FunCSV
+import eu.seitzal.funcsv.FunCSV
 
 /**
  * A table of data.
@@ -16,7 +16,7 @@ class Dataset (columns : Map[String, Col]) {
   /*--- COLUMN-BASED FUNCTIONS ---*/
 
   /**
-   * @return All data included in the dataset as a map of variable names and data columns.
+   * Returns all data included in the dataset as a map of variable names and data columns.
    */
   def getCols : Map[String, Col] = columns
 
@@ -65,7 +65,11 @@ class Dataset (columns : Map[String, Col]) {
       case NumCol(values) => result
     }
   }
-
+  /**
+   * Extract a single data column from the dataset.
+   * @param cname The variable name of the requested data column.
+   * @return The extracted data column.
+   */
   def apply(cname : String) = getCol(cname)
 
   /**
@@ -81,6 +85,7 @@ class Dataset (columns : Map[String, Col]) {
 
   /**
    * Extract a single non-numeric data column from the dataset.
+   * Numeric columns will be converted before being returned.
    * @param cname The variable name of the requested data column.
    * @return The extracted data column.
    */
@@ -248,7 +253,7 @@ class Dataset (columns : Map[String, Col]) {
     cnames :: otherrows.toList
   }
 
-  object tabhelper {
+  private object tabhelper {
     def longest(col : List[String], current : Int = 0) : Int = {
       if(col.isEmpty) 
         current
@@ -280,9 +285,9 @@ class Dataset (columns : Map[String, Col]) {
   }
 
   /**
-   * A table representation of the dataset, with lines between values
+   * A table representation of the dataset, with lines between values.
    * Note that for large datasets, this can become unreadable because lines are broken at random places by the console.
-   * In such a case, consider subsetting the dataset or removing columns before calling tab.
+   * In such a case, consider subsetting the dataset or removing columns before calling tabulate.
    */
   lazy val tabulate : String = {
     def catrow(row : List[String]) = (
@@ -307,7 +312,7 @@ class Dataset (columns : Map[String, Col]) {
    * Otherwise, sorting is done alphabetically.
    * Because datasets are immutable, this returns a new dataset.
    * @param cname The data column by which to sort the dataset. 
-   * @param mode The sorting mode used. See [[seitzal.scalastat.SortMode]] for options.
+   * @param mode The sorting mode used. See [[eu.seitzal.scalastat.SortMode]] for options.
    * @return The sorted dataset.
    */
   def sort(cname : String, mode : SortMode = SortMode.ASCENDING) : Dataset = {
@@ -325,7 +330,7 @@ class Dataset (columns : Map[String, Col]) {
     }
   }
 
-  // Multicolumn function shortcuts
+  /*-- Multicolumn function shortcuts --*/
 
   /** Calculates the covariance of two variables in the dataset
    *  @param cname1 The name of the data column representing the first variable

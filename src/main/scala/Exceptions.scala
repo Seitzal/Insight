@@ -1,4 +1,4 @@
-package seitzal.scalastat
+package eu.seitzal.scalastat
 
 class ColNotFoundException(cname : String) extends Exception("No variable named " + cname + " exists in dataset."){}
 class NotNumericException(cname : String) extends Exception(cname + " is not numeric."){}

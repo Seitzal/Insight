@@ -1,7 +1,7 @@
-package seitzal.scalastat.test
+package eu.seitzal.scalastat.test
 
 import org.scalatest._
-import seitzal.scalastat._
+import eu.seitzal.scalastat._
 
 class ScalastatSuite extends FunSuite {
 

@@ -1,4 +1,4 @@
-package seitzal.scalastat
+package eu.seitzal.scalastat
 
 sealed trait SortMode
 object SortMode {

@@ -1,4 +1,4 @@
-package seitzal.scalastat
+package eu.seitzal.scalastat
 
 import scala.annotation.tailrec
 
@@ -8,16 +8,32 @@ import scala.annotation.tailrec
  */
 case class NumCol (values : Vector[Option[Double]]) extends Col {
 
+  /**
+   * The number of values in the column, including blanks.
+   */
   lazy val length = values.length
 
+  /**
+   * The number of values in the column, excluding blanks.
+   */
+  lazy val existingLength = existingValues.length
+
+  /**
+   * A vector of doubles containing all defined values in this column, with blanks filtered out.
+   * When iterating over this, use existingLength (not length) as an exclusive upper bound.
+   */
   lazy val existingValues =
     values withFilter {
       case Some(value) => true
       case None        => false
     } map (_.get)
 
-  lazy val existingLength = existingValues.length
-  
+  /**
+   * Compares this column with another numeric column, filtering out any values that aren't defined on either side.
+   * This maintains pairs, but will shift their index.
+   * @param that The column to compare with this column.
+   * @return A tuple of vectors, wherein the first vector corresponds to this column, and the second to the other one.
+   */
   def commonExistingValues(that : NumCol) : (Vector[Double], Vector[Double]) = {
     val shorterLength =
       if(this.length <= that.length) this.length
@@ -32,11 +48,21 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
     iter(Vector[Double](), Vector[Double](), 0)
   }
 
+  /**
+   * Compares this column with another numeric column, filtering out any values that aren't defined on either side, 
+   * and re-wrapping both vectors into NumCol objects.
+   * This maintains pairs, but will shift their index.
+   * @param that The column to compare with this column.
+   * @return A tuple of NumCol objects, wherein the first object corresponds to this column, and the second to the other one.
+   */
   def commonExistingCols(that : NumCol) : (NumCol, NumCol) = {
     val commonExistingValues = this.commonExistingValues(that) 
     (new NumCol(commonExistingValues._1.map(Option(_))), new NumCol(commonExistingValues._2.map(Option(_)))) 
   }
 
+  /** 
+   * Compares this column with another numeric column, returning the number of value pairs that are defined in both columns.
+   */
   def commonExistingLength(that : NumCol) : Int = {
     val shorterLength =
       if(this.length <= that.length) this.length
@@ -82,14 +108,14 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
    */
   lazy val avg = Helper.round(safeSum / existingLength)
 
-  private lazy val sortedvs = existingValues.sorted
+  private lazy val sortedvalues = existingValues.sorted
 
   /**
    * The median value of the column.
    */
   lazy val median = (existingLength % 2) match {
-    case 1 => sortedvs(existingLength / 2)
-    case 0 => (sortedvs(existingLength / 2 - 1) + sortedvs(existingLength / 2)) / 2
+    case 1 => sortedvalues(existingLength / 2)
+    case 0 => (sortedvalues(existingLength / 2 - 1) + sortedvalues(existingLength / 2)) / 2
   }
 
   /**
@@ -355,6 +381,11 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
     )
 }
 
+/**
+ * The companion object of the NumCol class. 
+ * Contains a shorthand constructor to create a NumCol from a parameter list:
+ * <pre><code>val myNumericColumn = NumCol(2, 5, 3.24, -12)</code></pre>
+ */
 object NumCol {
   def apply(values : Double*) = new NumCol(values.map(Option(_)).toVector)
 }

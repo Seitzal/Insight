@@ -1,4 +1,4 @@
-package seitzal.scalastat
+package eu.seitzal.scalastat
 
 /**
  * Represents a data column containing not only numeric values.

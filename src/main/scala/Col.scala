@@ -1,7 +1,7 @@
-package seitzal.scalastat
+package eu.seitzal.scalastat
 
 /**
- * A column of data. Can be numeric ([[seitzal.scalastat.NumCol]]) or non-numeric ([[seitzal.scalastat.StrCol]])
+ * A column of data. Can be numeric ([[eu.seitzal.scalastat.NumCol]]) or non-numeric ([[eu.seitzal.scalastat.StrCol]])
  */
 trait Col {
 

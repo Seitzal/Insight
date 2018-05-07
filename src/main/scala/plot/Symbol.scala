@@ -1,4 +1,4 @@
-package seitzal.scalastat.plot
+package eu.seitzal.scalastat.plot
 
 import java.awt.Graphics
 

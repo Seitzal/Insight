@@ -1,11 +1,11 @@
-package seitzal.scalastat.test
+package eu.seitzal.scalastat.test
 
 import org.scalatest._
 import java.awt._
 import java.awt.event._
 import javax.swing._
-import seitzal.scalastat._
-import seitzal.scalastat.plot._
+import eu.seitzal.scalastat._
+import eu.seitzal.scalastat.plot._
 
 class ScalastatPlotSuite extends FunSuite {
 
