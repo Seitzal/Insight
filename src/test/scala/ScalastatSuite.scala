@@ -213,4 +213,11 @@ class ScalastatSuite extends FunSuite {
         (Vector(3.5, 3.0, 3.0), Vector(12.0, 0.4, 2.4)))
     }
   }
+
+  test("Pearson Matrix", CorrelMat, NoJenkins) {
+    new EnvQOG {
+      val filtered = qog $ ("rsf_pfi", "wef_ptp", "wdi_gdpcapcon2010", "undp_hdi", "gle_pop")
+      println(filtered.pearsonMatrix)
+    }
+  }
 }

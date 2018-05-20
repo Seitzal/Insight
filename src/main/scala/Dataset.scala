@@ -360,6 +360,19 @@ class Dataset (columns : Map[String, Col]) {
   def ols(cnameDependent : String, cnameIndependent : String) : (Double, Double) =
     num(cnameDependent) ols num(cnameIndependent)
 
+  lazy val pearsonMatrix : CorrelationMatrix = {
+    val numcols = colTuples.filter(
+      (item : (String, Col)) => item._2.isInstanceOf[NumCol]
+    )
+    def vec = (
+      for (nc1 <- numcols) yield (
+        for (nc2 <- numcols) 
+        yield Helper.roundTo(nc1._2.asInstanceOf[NumCol] pearson nc2._2.asInstanceOf[NumCol], 5)
+      ).toVector
+    ).toVector
+    new CorrelationMatrix(colTuples.unzip._1.toVector, vec)
+  }
+
 }
 
 /**
