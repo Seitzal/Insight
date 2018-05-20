@@ -143,40 +143,14 @@ class Dataset (columns : Map[String, Col]) {
   }
 
   /**
-   * Creates a subset of the dataset, including only those rows for which a specified data column has a specified value.
-   * @param cname The variable names of the data column by which to filter
-   * @param value The value which the specified column must have for a row to remain in the dataset.
-   * @return The new dataset, which includes only rows matching the filter
-   */
-  def filter(cname : String, value : String) : Dataset = {
-    val col = getCol(cname).asStrList.toVector
-    val rownums = for(i <- 0 until col.length if col(i) == value) yield i
-    val newmap = for((n, c) <- columns) yield {
-      val newc = c match {
-        case NumCol(v) => {
-          val newvec = (for(rn <- rownums) yield v(rn)).toVector
-          new NumCol(newvec)
-        }
-        case StrCol(v) => {
-          val newvec = (for(rn <- rownums) yield v(rn)).toVector
-          new StrCol(newvec)
-        }
-        case _         => throw new InvalidColException(cname)
-      }
-      (n, newc)
-    }
-    new Dataset(newmap)
-  }
-
-  /**
-   * Creates a subset of the dataset, including only those rows for which a specified numeric data column has a specified value.
+   * Creates a subset of the dataset, including only those rows for which a specified numeric data column fulfills a specified condition.
    * @param cname The variable names of the numeric data column by which to filter
-   * @param value The value which the specified column must have for a row to remain in the dataset.
+   * @param condition The condition a given value must fulfill for its containing row to remain in the dataset.
    * @return The new dataset, which includes only rows matching the filter
    */
-  def filter(cname : String, value : Double) : Dataset = getCol(cname) match {
+  def filter(cname : String, condition : Double => Boolean) : Dataset = getCol(cname) match {
     case NumCol(col) => {
-      val rownums = for(i <- 0 until col.length if col(i).getOrElse(null) == value) yield i
+      val rownums = for(i <- 0 until col.length if col(i).isDefined && condition(col(i).getOrElse(0))) yield i
       val newmap = for((n, c) <- columns) yield {
         val newc = c match {
           case NumCol(v) => {
@@ -196,6 +170,51 @@ class Dataset (columns : Map[String, Col]) {
     case StrCol(col) => throw new NotNumericException(cname)
     case _           => throw new InvalidColException(cname)
   }
+
+  /**
+   * Creates a subset of the dataset, including only those rows for which a specified numeric data column has a specified value.
+   * @param cname The variable names of the numeric data column by which to filter
+   * @param value The value which the specified column must have for a row to remain in the dataset.
+   * @return The new dataset, which includes only rows matching the filter
+   */
+  def filter(cname : String, value : Double) : Dataset = 
+    filter(cname, (x : Double) => x == value)
+
+
+  /**
+   * Creates a subset of the dataset, including only those rows for which a specified data column fulfills a specified condition.
+   * @param cname The variable names of the data column by which to filter
+   * @param condition The condition a given value must fulfill for its containing row to remain in the dataset.
+   * @return The new dataset, which includes only rows matching the filter
+   */
+  def filterS(cname : String, condition : String => Boolean) : Dataset = {
+    val col = getCol(cname).asStrList.toVector
+    val rownums = for(i <- 0 until col.length if condition(col(i))) yield i
+    val newmap = for((n, c) <- columns) yield {
+      val newc = c match {
+        case NumCol(v) => {
+          val newvec = (for(rn <- rownums) yield v(rn)).toVector
+          new NumCol(newvec)
+        }
+        case StrCol(v) => {
+          val newvec = (for(rn <- rownums) yield v(rn)).toVector
+          new StrCol(newvec)
+        }
+        case _         => throw new InvalidColException(cname)
+      }
+      (n, newc)
+    }
+    new Dataset(newmap)
+  }
+
+   /**
+   * Creates a subset of the dataset, including only those rows for which a specified data column has a specified value.
+   * @param cname The variable names of the data column by which to filter
+   * @param value The value which the specified column must have for a row to remain in the dataset.
+   * @return The new dataset, which includes only rows matching the filter
+   */
+  def filterS(cname : String, value : String) : Dataset =
+    filterS(cname, (s : String) => s == value)
 
   def aggrEven(cname : String, firstCeiling : Double, width : Double, k : Int) = getCol(cname) match {
     
