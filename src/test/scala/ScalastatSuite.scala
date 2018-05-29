@@ -49,7 +49,7 @@ class ScalastatSuite extends FunSuite {
         qog
         .$("ccode", "cname" , "year" , "ccodealp" , "cname_year", "ccodealp_year", "ccodecow", "ccodewb", "version", "ajr_settmort")
         .filter("year", 2012)
-        .filter("ccodealp", "GBR")
+        .filterS("ccodealp", "GBR")
         .withRowNumbers
         .tab
       )
