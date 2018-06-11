@@ -338,14 +338,16 @@ class Dataset (columns : Map[String, Col]) {
     val heads = getRows.head
     val coln = (for(i <- 0 until heads.length if heads(i) == cname) yield i).head
     val rows = getRows.tail
-    val newrows = getCol(cname) match {
-      case NumCol(v) => rows.sortBy((row : List[String]) => row(coln).toDouble)
-      case StrCol(v) => rows.sortBy((row : List[String]) => row(coln))
+    val definedRows = rows.filter(row => row(coln) != "--")
+    val undefinedRows = rows.filter(row => row(coln) == "--")
+    val newRows = getCol(cname) match {
+      case NumCol(v) => definedRows.sortBy(row => row(coln).toDouble)
+      case StrCol(v) => definedRows.sortBy(row => row(coln))
       case _         => throw new ColNotFoundException(cname)
     }
     mode match {
-      case SortMode.ASCENDING => Dataset.fromRows(heads :: newrows)
-      case SortMode.DESCENDING => Dataset.fromRows(heads :: (newrows.reverse))
+      case SortMode.ASCENDING => Dataset.fromRows(heads :: (newRows ++ undefinedRows))
+      case SortMode.DESCENDING => Dataset.fromRows(heads :: (newRows.reverse ++ undefinedRows))
     }
   }
 

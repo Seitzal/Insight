@@ -80,7 +80,7 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
   lazy val asStrList = 
     for(e <- values.toList) yield e match {
       case Some(value) => value.toString
-      case None        => "-"
+      case None        => "--"
     }
       
   override def toString = {
