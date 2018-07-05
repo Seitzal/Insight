@@ -3,7 +3,7 @@ package eu.seitzal.scalastat.test
 import org.scalatest._
 import eu.seitzal.scalastat._
 
-class ScalastatSuite extends FunSuite {
+class ScalastatSuite extends FunSuite with Tags {
 
   // Environments
   trait EnvQOG {

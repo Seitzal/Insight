@@ -7,7 +7,7 @@ import javax.swing._
 import eu.seitzal.scalastat._
 import eu.seitzal.scalastat.plot._
 
-class ScalastatPlotSuite extends FunSuite {
+class ScalastatPlotSuite extends FunSuite with Tags {
 
   def cross(g : Graphics, x : Int, y : Int) {
     g.drawLine(x - 2, y + 2, x + 2, y - 2)
