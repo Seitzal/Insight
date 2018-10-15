@@ -220,4 +220,11 @@ class ScalastatSuite extends FunSuite with Tags {
       println(filtered.pearsonMatrix)
     }
   }
+
+  test("ntiles", Aggr, NoJenkins) {
+    new EnvQOG {
+      val filtered = qog $ ("year", "cname", "undp_hdi") filter ("year", 2010)
+      assert(filtered.ntile("undp_hdi", 10, 0.85) == 9)
+    }
+  }
 }

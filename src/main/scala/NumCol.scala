@@ -269,6 +269,29 @@ case class NumCol (values : Vector[Option[Double]]) extends Col {
   }
 
   /**
+   * Returns a list of threshold values between n equally sized brackets of values.
+   * @param n The number of brackets (The returned list will be n - 1 long)
+   */
+  def ntiles (n : Int) : List[Double] = {
+    if (n <= 0) throw new ZeroCountException("Number of n-tiles")
+    val step : Double = existingLength.toDouble / n
+    (for (i <- step until existingLength by step) yield sortedvalues(i.toInt)).toList
+  }
+
+  /**
+   * Returns which out of n equally sized brackets a value x would be in.
+   * @param n The number of brackets
+   * @param x The value for which the percentile should be found
+   */
+  def ntile(n : Int, x : Double) : Int = {
+    def iter(n : Int, remainder : List[Double]) : Int =
+      if (x < remainder.head) n
+      else if (remainder.isEmpty) n
+      else iter(n + 1, remainder.tail)
+    iter(1, ntiles(n))
+  }
+
+  /**
    * Calculates the column's concentration rate, defined as the sum of the column's m largest elements divided by the sum of all elements.
    * @param m The number of elements to include in the numerator sum
    */

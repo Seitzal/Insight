@@ -255,6 +255,23 @@ class Dataset (columns : Map[String, Col]) {
     case _           => throw new InvalidColException(cname)
   }
 
+  /**
+   * Returns a list of threshold values between n equally sized brackets of values.
+   * @param cname The name of the column representing the data for bracketing
+   * @param n The number of brackets (The returned list will be n - 1 long)
+   */
+  def ntiles(cname : String, n : Int) : List[Double] =
+    num(cname).ntiles(n)
+
+  /**
+   * Returns which out of n equally sized brackets a value x would be in.
+   * @param cname The name of the column representing the data for bracketing
+   * @param n The number of brackets
+   * @param x The value for which the percentile should be found
+   */
+  def ntile(cname : String, n : Int, x : Double) : Int =
+    num(cname).ntile(n, x)
+
   /*--- ROW-BASED FUNCTIONS ---*/
 
   /**
