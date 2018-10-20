@@ -4,6 +4,11 @@ import org.scalatest._
 import eu.seitzal.insight._
 
 class TextExport extends FunSuite with Tags {
+
+  test("QOG Preload", Slow, NoJenkins) {
+    assert(qogPreload.qog.isInstanceOf[DataFrame])
+  }
+
   test("Html export, small dataset", Export) {
     val data = read.csv("testdata/test.csv")
     new HtmlBuilder(data.withRowNumbers).export("test-outputs/test1.html")
@@ -16,9 +21,7 @@ class TextExport extends FunSuite with Tags {
 
   test("Html export, larger dataset", Export, Slow, NoJenkins) {
     val data = read.csv("testdata/qog_bas_ts_jan18.csv")
-    println("read complete")
     val filtered = data.filter("year", 2012)
-    println("filter complete")
     new HtmlBuilder(filtered.withRowNumbers).export("test-outputs/test3.html")
   }
 }

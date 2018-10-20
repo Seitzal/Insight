@@ -11,6 +11,7 @@ trait TestEnv extends TestModule {
     ivy"org.scalatest::scalatest::3.0.5",
     ivy"org.scalactic::scalactic::3.0.5"
   )
+  def forkArgs = Seq("-Xmx3g")
   def testFrameworks = Seq("org.scalatest.tools.Framework")
 }
 

@@ -17,5 +17,6 @@ trait Tags {
 
   // Utility tags
   object NoJenkins extends Tag("NoJenkins")
+  object HasOutput extends Tag("HasOutput")
   object Slow extends Tag("Slow")
 }

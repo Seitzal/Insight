@@ -137,7 +137,7 @@ class DataFrame (columns : Map[String, Series]) {
     val rownumbers = new NumSeries((
       for(i <- 0 until unmapped.head._2.length)
       yield Option(i.toDouble)
-    ).toVector)
+    ).toVector.par)
     new DataFrame((("#", rownumbers) :: unmapped).toMap)
   }
 
@@ -158,11 +158,11 @@ class DataFrame (columns : Map[String, Series]) {
         val newmap = for((n, c) <- columns) yield {
           val newc = c match {
             case NumSeries(v) => {
-              val newvec = (for(rn <- rownums) yield v(rn)).toVector
+              val newvec = (for(rn <- rownums) yield v(rn)).toVector.par
               new NumSeries(newvec)
             }
             case StrSeries(v) => {
-              val newvec = (for(rn <- rownums) yield v(rn)).toVector
+              val newvec = (for(rn <- rownums) yield v(rn)).toVector.par
               new StrSeries(newvec)
             }
             case _         => throw new InvalidSeriesException(cname)
@@ -199,11 +199,11 @@ class DataFrame (columns : Map[String, Series]) {
     val newmap = for((n, c) <- columns) yield {
       val newc = c match {
         case NumSeries(v) => {
-          val newvec = (for(rn <- rownums) yield v(rn)).toVector
+          val newvec = (for(rn <- rownums) yield v(rn)).toVector.par
           new NumSeries(newvec)
         }
         case StrSeries(v) => {
-          val newvec = (for(rn <- rownums) yield v(rn)).toVector
+          val newvec = (for(rn <- rownums) yield v(rn)).toVector.par
           new StrSeries(newvec)
         }
         case _         => throw new InvalidSeriesException(cname)
@@ -459,8 +459,8 @@ object DataFrame {
       }
     val triedlist = raw.map(tryconvert)
     if(triedlist.forall(_.isDefined))
-      new NumSeries(triedlist.map(_.get).toVector)
+      new NumSeries(triedlist.map(_.get).toVector.par)
     else
-      new StrSeries(raw.toVector)
+      new StrSeries(raw.toVector.par)
   }
 }

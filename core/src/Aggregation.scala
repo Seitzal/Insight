@@ -50,11 +50,10 @@ object Aggregation {
 
       //Generate new dataset
       val col_classes = new StrSeries(
-        for(c <- classes)
-        yield c.desc
+        classes.map(c => c.desc).par
       )
       val col_values = 
-        new NumSeries(values.map((x : Int) => Option(x.toDouble)))
+        new NumSeries(values.map((x : Int) => Option(x.toDouble)).par)
       new DataFrame(Map(
         cname -> col_classes,
         "n"   -> col_values

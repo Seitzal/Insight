@@ -1,31 +1,29 @@
 package eu.seitzal.insight
 
 import scala.annotation.tailrec
+import scala.collection.parallel.immutable.ParVector
 
 /**
  * A series containing only numeric values.
  */
-case class NumSeries (values : Vector[Option[Double]]) extends Series {
+case class NumSeries (values : ParVector[Option[Double]]) extends Series {
 
   /**
    * The number of values in the series, including blanks.
    */
-  lazy val length = values.length
+  val length = values.length
 
   /**
    * The number of values in the series, excluding blanks.
    */
-  lazy val existingLength = existingValues.length
+  def existingLength = existingValues.length
 
   /**
    * A vector of doubles containing all defined values in this series,
    * with blanks filtered out.
    */
-  lazy val existingValues =
-    values withFilter {
-      case Some(value) => true
-      case None        => false
-    } map (_.get)
+  def existingValues =
+    values.filter(_.isDefined).map(_.get)
 
   /**
    * Compares this series with another numeric series,
@@ -35,11 +33,13 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    * @return A tuple of vectors, wherein the first vector corresponds to this 
    *         series, and the second to the other one.
    */
-  def commonExistingValues(that : NumSeries) : (Vector[Double], Vector[Double]) = {
+  def commonExistingValues(that : NumSeries) :
+      (Vector[Double], Vector[Double]) = {
     val shorterLength =
       if(this.length <= that.length) this.length
       else that.length
-    def iter(x1 : Vector[Double], x2 : Vector[Double], i : Int) : (Vector[Double], Vector[Double]) = 
+    def iter(x1 : Vector[Double], x2 : Vector[Double], i : Int) :
+        (Vector[Double], Vector[Double]) = 
       if(i == shorterLength)
         (x1, x2)
       else if(this.values(i).isDefined && that.values(i).isDefined)
@@ -60,8 +60,8 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    */
   def commonExisting(that : NumSeries) : (NumSeries, NumSeries) = {
     val commonExistingValues = this.commonExistingValues(that) 
-    (new NumSeries(commonExistingValues._1.map(Option(_))), 
-      new NumSeries(commonExistingValues._2.map(Option(_)))) 
+    (new NumSeries(commonExistingValues._1.map(Option(_)).par), 
+      new NumSeries(commonExistingValues._2.map(Option(_)).par)) 
   }
 
   /** 
@@ -82,11 +82,10 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
     iter(0, 0)
  }
 
-  lazy val asStrList = 
-    for(e <- values.toList) yield e match {
-      case Some(value) => value.toString
-      case None        => "--"
-    }
+  def asStrList = (values map {
+    case Some(value) => value.toString
+    case None        => "--"
+  }).seq.toList
       
   override def toString = {
     val withtrailingcomma = (for(e <- asStrList) yield e + ", ").mkString
@@ -97,19 +96,19 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    * The sum of all values of the series.
    * @return The sum of the series.
    */
-  lazy val sum = existingValues.sum
+  def sum = existingValues.fold(0.0)(_ + _)
 
   /**
    * The arithmetic mean of all values of the series.
    */
-  lazy val avg = sum / existingLength
+  def avg = sum / existingLength
 
-  private lazy val sortedvalues = existingValues.sorted
+  private def sortedvalues = existingValues.seq.sorted
 
   /**
    * The median value of the series.
    */
-  lazy val median = (existingLength % 2) match {
+  def median = (existingLength % 2) match {
     case 1 => 
       sortedvalues(existingLength / 2)
     case 0 => 
@@ -120,7 +119,7 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
   /**
    * The largest value in the series.
    */
-  lazy val max = {
+  def max = {
     def iter(xs : List[Double], current : Double) : Double =
       if (xs.isEmpty) current
       else if (xs.head > current) iter(xs.tail, xs.head)
@@ -131,7 +130,7 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
   /**
    * The smallest value in the series.
    */
-  lazy val min = {
+  def min = {
     def iter(xs : List[Double], current : Double) : Double =
       if (xs.isEmpty) current
       else if (xs.head < current) iter(xs.tail, xs.head)
@@ -143,23 +142,23 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    * A series containing the deviations of each element in this series from the 
    * arithmetic mean
    */
-  lazy val devs = derive(_ - avg)
+  def devs = derive(_ - avg)
 
   /**
    * A series containing the squared deviations of each element in this series
    * from the arithmetic mean
    */
-  lazy val devsSquared = derive((x : Double) => (x - avg) * (x - avg))
+  def devsSquared = derive((x : Double) => (x - avg) * (x - avg))
 
   /**
    * The variance of the series.
    */
-  lazy val variance = devsSquared.avg
+  def variance = devsSquared.avg
 
   /**
    * The standard deviation of the series
    */
-  lazy val standardDev = Helper.round(math.sqrt(variance))
+  def standardDev = Helper.round(math.sqrt(variance))
   
   /**
    * Calculates the n-th central moment of a normal distribution
@@ -174,19 +173,19 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
   /**
    * Calculates the skewness of a normal distribution
    */
-  lazy val skewness = Helper.round(centralMoment(3) / (variance * standardDev))
+  def skewness = centralMoment(3) / (variance * standardDev)
 
   /**
    * Calculates the kurtosis of a normal distribution
    */
-  lazy val kurtosis = Helper.round(centralMoment(4) / (variance * variance) - 3)
+  def kurtosis = centralMoment(4) / (variance * variance) - 3
 
   /**
    * A derived series containing the relative frequencies corresponding 
    * to the absolute frequencies in this series.
    * This function will return 0s in place of empty values
    */
-  lazy val relfreq = derive(_ / sum)
+  def relfreq = derive(_ / sum)
 
   /**
    * A series containing the cumulative relative frequencies
@@ -194,7 +193,7 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    * Cumulation is done from the head down the tail of the value list,
    * i.e. top-to-bottom when imagining a table.
    */
-  lazy val crelfreq = {
+  def crelfreq = {
     @tailrec def loop(remainder : List[Double], acc : Vector[Double], 
         prev : Double) : Vector[Double] =
       if(remainder.isEmpty) acc
@@ -203,7 +202,7 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
         loop(remainder.tail, acc :+ crf, crf)
       }
     new NumSeries(loop(relfreq.values.toList.map(_.getOrElse(0.0)), 
-      Vector[Double](), 0).map(Option(_)))
+      Vector[Double](), 0).map(Option(_)).par)
   }
 
   /**
@@ -212,7 +211,7 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    * Cumulation is done from the head down the tail of the value list,
    * i.e. top-to-bottom when imagining a table.
    */
-  lazy val cabsfreq = {
+  def cabsfreq = {
     @tailrec def loop(remainder : List[Double], acc : Vector[Double], 
         prev : Double) : Vector[Double] =
       if(remainder.isEmpty) acc
@@ -221,16 +220,16 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
         loop(remainder.tail, acc :+ crf, crf)
       }
     new NumSeries(loop(values.toList.map(_.getOrElse(0.0)),
-      Vector[Double](), 0).map(Option(_)))
+      Vector[Double](), 0).map(Option(_)).par)
   }
 
   /**
    * Calculates the Gini concentration index for an unaggregated data series.
    */
-  lazy val gini = {
+  def gini = {
     val numerator = 2 * (
       (for (i <- 0 until existingLength) yield (i + 1) * existingValues(i))
-      .foldLeft(0.0)(_ + _)
+      .fold(0.0)(_ + _)
     )
     val subtrahend = (existingLength.toDouble + 1) / existingLength.toDouble
     numerator / (sum * existingLength) - subtrahend
@@ -241,25 +240,25 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    * data series.
    * The result is guaranted to be in [0;1] even for very short / small-n series
    */
-  lazy val ngini = 
+  def ngini = 
     gini * (existingLength.toDouble / (existingLength.toDouble - 1))
 
   /**
    * Calculates the Gini concentration index for an aggregated data series,
    * assuming equal class breadth and even distribution within classes.
    */
-  lazy val cgini = {
+  def cgini = {
     values.map {
       case None    => throw new MissingValueException("aggregate Gini index")
       case _       => 0
     }
     val hstar = 1 / length.toDouble
-    Helper.round(((for (i <- 0 until length) yield {
+    ((for (i <- 0 until length) yield {
       if(i == 0)
         hstar * crelfreq.values(i).get
       else
         hstar * (crelfreq.values(i - 1).get + crelfreq.values(i).get)
-    }).foldLeft(0.0)(_ + _)) - 1)
+    }).fold(0.0)(_ + _)) - 1
   }
 
   /**
@@ -267,9 +266,9 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    * The RHI is defined as the amount that would need to be redistributed 
    * in order to achieve even distribution.
    */
-  lazy val rhi = {
+  def rhi = {
     val upperlist = existingValues.filter(_ >= avg)
-    val numerator = upperlist.map((x : Double) => x - avg).foldLeft(0.0)(_ + _)
+    val numerator = upperlist.map((x : Double) => x - avg).fold(0.0)(_ + _)
     numerator / sum
   }
 
@@ -304,7 +303,7 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    * @param m The number of elements to include in the numerator sum
    */
   def crate (m : Int) = {
-    val numerator = existingValues.sorted.takeRight(m).foldLeft(0.0)(_ + _)
+    val numerator = existingValues.seq.sorted.takeRight(m).foldLeft(0.0)(_ + _)
     numerator / sum.toDouble
   }
 
@@ -315,8 +314,7 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    *  Values for this index range from 1/n (even distribution) to 1 
    *  (maximal concentration)
    */
-  lazy val herfindahl = Helper.round(relfreq.derive((x : Double) =>
-    math.pow(x, 2)).sum)
+  def herfindahl = relfreq.derive((x : Double) => math.pow(x, 2)).sum
 
   lazy val info = (
     "\n"
@@ -380,7 +378,7 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    */
   def derive(func : Double => Double) =
     new NumSeries (
-      for(e <- values) yield e match {
+      values.map {
         case Some(x) => Option(func(x))
         case None    => None
       }
@@ -395,7 +393,7 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
    */
   def deriveStr(func : Double => String) =
     new StrSeries (
-      for(e <- values) yield e match {
+      values.map {
         case Some(x) => func(x)
         case None    => "-" 
       }
@@ -408,5 +406,5 @@ case class NumSeries (values : Vector[Option[Double]]) extends Series {
  * <pre><code>val myNumSeries = NumSeries(2, 5, 3.24, -12)</code></pre>
  */
 object NumSeries {
-  def apply(values : Double*) = new NumSeries(values.map(Option(_)).toVector)
+  def apply(values : Double*) = new NumSeries(values.map(Option(_)).toVector.par)
 }

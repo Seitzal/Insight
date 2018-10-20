@@ -13,12 +13,12 @@ trait Series {
   /**
    * A list of string objects representing the values contained in the series
    */
-  val asStrList : List[String]
+  def asStrList : List[String]
 
   /**
    * A collection of measures and aggregations depending on the data type
    */
-  val info : String
+  def info : String
 
 }
 

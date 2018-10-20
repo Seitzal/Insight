@@ -14,7 +14,7 @@ class TestPlot extends FunSuite with Tags {
     g.drawLine(x - 2, y - 2, x + 2, y + 2)
   }
 
-  test("Test Plot 1", new Tag("TestPlot"), NoJenkins) {
+  test("Test Plot 1", new Tag("TestPlot"), NoJenkins, HasOutput) {
     def draw (g : Graphics) {
     g.fillRect(0, 0, 300, 300)
     g.setColor(Color.red)
@@ -24,12 +24,12 @@ class TestPlot extends FunSuite with Tags {
     testplot.show
   }
 
-  test("Scatterplot 1", new Tag("Scatterplot"), NoJenkins) {
+  test("Scatterplot 1", new Tag("Scatterplot"), NoJenkins, HasOutput) {
     val data = read.csv("testdata/correl1.csv")
     ScatterPlot(data, "X", "Y").show
   }
 
-  test("Scatterplot 2", new Tag("Scatterplot2"), NoJenkins, Slow) {
+  test("Scatterplot 2", new Tag("Scatterplot2"), NoJenkins, HasOutput, Slow) {
     val data = read.csv("testdata/qog_bas_ts_jan18.csv")
     ScatterPlot(data, "wdi_gdpcapcon2010", "undp_hdi", Symbol.DOT).show
   }
