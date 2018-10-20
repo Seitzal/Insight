@@ -10,20 +10,20 @@ import eu.seitzal.funcsv.FunCSV
  * @param columns A map consisting of the data frame's variable names as keys 
                   and their corresponding data columns as values.
  */
-class DataFrame (columns : Map[String, Series]) {
+class DataFrame (columns : Vector[(String, Series)]) {
 
   /*--- COLUMN-BASED FUNCTIONS ---*/
 
   /**
    * All data included in the data frame as a map of variable names and series
    */
-  def getCols : Map[String, Series] = columns
+  def getCols : Map[String, Series] = columns.toMap
 
   /**
    * Used internally for data formatting.
    */
   lazy val colTuples : List[(String, Series)] = {
-    val raw = getCols.toList
+    val raw = columns.toList
     val cnames = raw.unzip._1
     // If rows are numbered, the row number should be in the first column
     val orderedcols = if(cnames.contains("#")) {
@@ -55,11 +55,12 @@ class DataFrame (columns : Map[String, Series]) {
    * @return The extracted data column as a series.
    */
   def getCol(cname : String) : Series = {
-    val result = columns getOrElse(cname, NotFound) 
-    result match {
-      case NotFound => throw new ColNotFoundException(cname)
-      case StrSeries(values) => result
-      case NumSeries(values) => result
+    val index = columns indexWhere(_._1 == cname)
+    if (index == -1) throw new ColNotFoundException(cname)
+    else columns(index) match {
+      case (cn : String, col : StrSeries) => col
+      case (cn : String, col : NumSeries) => col
+      case _  => throw new InvalidSeriesException(cname)
     }
   }
 
@@ -101,7 +102,7 @@ class DataFrame (columns : Map[String, Series]) {
    */
   def +(cname : String, col : Series) = {
     val newcol = (cname, col)
-    new DataFrame(columns + newcol)
+    new DataFrame(columns :+ newcol)
   }
 
   /**
@@ -109,7 +110,8 @@ class DataFrame (columns : Map[String, Series]) {
    * @param cname The variable name of the unwanted data column
    * @return The new dataset, which omits the specified column
    */
-  def -(cname : String) = new DataFrame(columns - cname)
+  def -(cname : String) =
+    new DataFrame(columns.filter(t => t._1 != cname))
   
   /**
    * Removes multiple data columns from the dataset and returns the resulting
@@ -117,28 +119,26 @@ class DataFrame (columns : Map[String, Series]) {
    * @param cname The variable names of the unwanted data columns
    * @return The new dataset, which omits the specified columns
    */
-  def --(cnames : String*) = new DataFrame(columns -- cnames)
+  def --(cnames : String*) = 
+    new DataFrame(columns.filter(t => !cnames.contains(t._1)))
 
   /**
    * Returns a new data frame including only the specified data columns.
    * @param cname The variable names of the desired data columns
    * @return The new dataset, which includes only the specified columns
    */
-  def $(cnames : String*) : DataFrame = {
-    val cols = for(cname <- cnames.toList) yield getCol(cname)
-    new DataFrame((cnames zip cols).toMap)
-  }
+  def $(cnames : String*) : DataFrame =
+    new DataFrame(columns.filter(t => cnames.contains(t._1)))
 
   /**
    * Returns the data frame with a column of 0-based row numbers added.
    */
   def withRowNumbers = {
-    val unmapped = columns.toList
     val rownumbers = new NumSeries((
-      for(i <- 0 until unmapped.head._2.length)
+      for(i <- 0 until columns.head._2.length)
       yield Option(i.toDouble)
     ).toVector.par)
-    new DataFrame((("#", rownumbers) :: unmapped).toMap)
+    new DataFrame((("#", rownumbers) +: columns))
   }
 
   /**
@@ -441,7 +441,7 @@ object DataFrame {
       for(row <- raw.tail) yield row(i)
     )
     val cols = for(rawcol <- rawcols) yield parseCol(rawcol)
-    new DataFrame((raw.head zip cols).toMap)
+    new DataFrame((raw.head zip cols).toVector)
   }
 
   /**

@@ -5,10 +5,6 @@ import eu.seitzal.insight._
 
 class TestCLI extends FunSuite with Tags with EnvGen {
 
-  test("QOG Preload", Slow, NoJenkins) {
-    assert(qogPreload.qog.isInstanceOf[DataFrame])
-  }
-
    test("Fixed-width single column aggregation", Aggr, NoJenkins, HasOutput) {
     new EnvAggr {
       val aggr = ratings.aggregateByValue("Rating", 1, .5, 10).withRowNumbers

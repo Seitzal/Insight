@@ -5,10 +5,6 @@ import eu.seitzal.insight._
 
 class TextExport extends FunSuite with Tags {
 
-  test("QOG Preload", Slow, NoJenkins) {
-    assert(qogPreload.qog.isInstanceOf[DataFrame])
-  }
-
   test("Html export, small dataset", Export) {
     val data = read.csv("testdata/test.csv")
     new HtmlBuilder(data.withRowNumbers).export("test-outputs/test1.html")

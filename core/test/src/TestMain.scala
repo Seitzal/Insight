@@ -5,10 +5,6 @@ import eu.seitzal.insight._
 
 class TestMain extends FunSuite with Tags with EnvGen {
 
-  test("QOG Preload", Slow, NoJenkins) {
-    assert(qogPreload.qog.isInstanceOf[DataFrame])
-  }
-
   test("Cumulative absolute frequencies", Freq) {
     new EnvFreq {
       val cf = freq.num("Anzahl").cabsfreq
@@ -76,12 +72,6 @@ class TestMain extends FunSuite with Tags with EnvGen {
     new EnvCorrel {
       val covxy = data1.cov("X", "Y")
       assert(Helper.roundTo(covxy, 2) == 7.94)
-    }
-  }
-
-  test("commonExisting", Correl) {
-    new EnvCorrel {
-      val r = data1.num("X") commonExisting data1.num("Y")
     }
   }
 

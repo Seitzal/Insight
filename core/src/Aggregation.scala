@@ -54,9 +54,9 @@ object Aggregation {
       )
       val col_values = 
         new NumSeries(values.map((x : Int) => Option(x.toDouble)).par)
-      new DataFrame(Map(
-        cname -> col_classes,
-        "n"   -> col_values
+      new DataFrame(Vector(
+        (cname, col_classes),
+        ("n", col_values)
       ))
     }
     case StrSeries(col) => throw new NotNumericException(cname)
