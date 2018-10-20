@@ -1,4 +1,4 @@
-package eu.seitzal.scalastat
+package eu.seitzal.insight
 
 sealed trait SortMode
 object SortMode {

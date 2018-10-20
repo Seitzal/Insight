@@ -1,4 +1,4 @@
-package eu.seitzal.scalastat
+package eu.seitzal.insight
 
 import java.io.PrintWriter
 import java.io.IOException
@@ -6,9 +6,9 @@ import java.util.Calendar
 import java.text.SimpleDateFormat
 
 
-class HtmlBuilder (dataset : Dataset, title : String) {
+class HtmlBuilder (dataset : DataFrame, title : String) {
 
-  def this(dataset: Dataset) {
+  def this(dataset: DataFrame) {
     this(dataset, "Untitled dataset")
   }
 

@@ -1,36 +1,39 @@
-package eu.seitzal.scalastat.test
+package eu.seitzal.test.insight
 
 import org.scalatest._
-import eu.seitzal.scalastat._
+import org.scalactic.TolerantNumerics
+import eu.seitzal.insight._
 
-class ScalastatSuite extends FunSuite with Tags {
+class TestMain extends FunSuite with Tags {
+
+  implicit private val doubleEq = TolerantNumerics.tolerantDoubleEquality(1e-4f)
 
   // Environments
   trait EnvQOG {
-    lazy val qog = Dataset.readCSV("testdata/qog_bas_ts_jan18.csv")
+    lazy val qog = read.csv("testdata/qog_bas_ts_jan18.csv")
   }
 
   trait EnvFreq {
-    lazy val freq = Dataset.readCSV("testdata/freq.csv")
+    lazy val freq = read.csv("testdata/freq.csv")
   }
 
   trait EnvDistri {
-    lazy val data1 = Dataset.readCSV("testdata/distri1.csv")
-    lazy val data2 = Dataset.readCSV("testdata/distri2.csv")
-    lazy val data3 = Dataset.readCSV("testdata/distri3.csv")
+    lazy val data1 = read.csv("testdata/distri1.csv")
+    lazy val data2 = read.csv("testdata/distri2.csv")
+    lazy val data3 = read.csv("testdata/distri3.csv")
   }
 
   trait EnvAggr {
-    lazy val ratings = Dataset.readCSV("testdata/ratings.csv")
+    lazy val ratings = read.csv("testdata/ratings.csv")
   }
 
   trait EnvCorrel {
-    lazy val data1 = Dataset.readCSV("testdata/correl1.csv")
-    lazy val data2 = Dataset.readCSV("testdata/correl2.csv")
+    lazy val data1 = read.csv("testdata/correl1.csv")
+    lazy val data2 = read.csv("testdata/correl2.csv")
   }
 
   trait EnvMissingVals {
-    lazy val data = Dataset.readCSV("testdata/missingvals.csv")
+    lazy val data = read.csv("testdata/missingvals.csv")
   }
 
   //Tests
@@ -69,28 +72,28 @@ class ScalastatSuite extends FunSuite with Tags {
   }
 
   test("tab function", Out, NoJenkins) {
-    println(Dataset.readCSV("testdata/test.csv").withRowNumbers.tab)
+    println(read.csv("testdata/test.csv").withRowNumbers.tab)
   }
 
   test("tabulate function", Out, NoJenkins) {
-    println(Dataset.readCSV("testdata/test.csv").withRowNumbers.tabulate)
+    println(read.csv("testdata/test.csv").withRowNumbers.tabulate)
   }
 
   test("tabulate function with row numbers read from file", Out, NoJenkins) {
-    println(Dataset.readCSV("testdata/distri1.csv").tabulate)
+    println(read.csv("testdata/distri1.csv").tabulate)
   }
 
   test("Gini index for unaggregated data", Distri) {
     new EnvDistri {
-      assert((data1 num("Umsatz") gini) == 0.432)
-      assert((data1 num("Umsatz") ngini) == 0.48)
+      assert((data1 num("Umsatz") gini) === 0.432)
+      assert((data1 num("Umsatz") ngini) === 0.48)
     }
   }
 
   test("Gini index for unaggregated relative frequencies", Distri) {
     new EnvDistri {
-      assert(data1.num("Umsatz").relfreq.gini == 0.432)
-      assert(data1.num("Umsatz").relfreq.ngini == 0.48)
+      assert(data1.num("Umsatz").relfreq.gini === 0.432)
+      assert(data1.num("Umsatz").relfreq.ngini === 0.48)
     }
   }
 
@@ -101,18 +104,18 @@ class ScalastatSuite extends FunSuite with Tags {
   }
 
   test("Robin Hood index", Distri) {
-    val col = NumCol(2.5,0.5,0.5,0.5)
-    assert(col.rhi == 1.5 / 4)
+    val xs = NumSeries(2.5,0.5,0.5,0.5)
+    assert(xs.rhi == 1.5 / 4)
   }
 
   test("Concentration rate", Distri) {
-    val col = NumCol(30, 50, 10, 12, 100, 7, 8)
-    assert(col.crate(3) == 0.8294931)
+    val xs = NumSeries(30, 50, 10, 12, 100, 7, 8)
+    assert(xs.crate(3) === 0.8294931)
   }
 
   test("Herfindahl index 1", Distri) {
     new EnvAggr {
-      assert(ratings.num("Rating").herfindahl == 0.0469612)
+      assert(ratings.num("Rating").herfindahl === 0.0469612)
     }
   }
 
@@ -136,7 +139,7 @@ class ScalastatSuite extends FunSuite with Tags {
 
   test("Fixed-width single column aggregation", Aggr, NoJenkins) {
     new EnvAggr {
-      val aggr = ratings.aggrEven("Rating", 1, .5, 10).withRowNumbers
+      val aggr = ratings.aggregateByValue("Rating", 1, .5, 10).withRowNumbers
       println((aggr + ("u", aggr.num("n").relfreq)).tabulate)
     }
   }
@@ -164,31 +167,26 @@ class ScalastatSuite extends FunSuite with Tags {
     }
   }
 
-  test("Partial correlation test 1", Correl) {
-    new EnvCorrel {
-      assert(data1.num("X").pearsonPartial(data1.num("Y"), data1.num("Y")) == 0)
-    }
-  }
-
-  test("Partial correlation test 2", Correl) {
+  test("Partial correlation", Correl) {
     new EnvCorrel {
       val xyunderz = data1.pearsonPartial("X", "Y", "Z")
       assert(Helper.roundTo(xyunderz, 3) == 0.885)
     }
   }
 
-  test("Simple linear regression", Correl) {
+  test("Simple linear regression", Regression) {
     new EnvCorrel {
-      val reg = data2.ols("Footprint", "GDP/Capita")
-      assert(Helper.roundTo(reg._1, 3) == 1.199)
-      assert(Helper.roundTo(reg._2, 6) == 0.000148)
+      val reg = regression.SimpleOLS.build(data2, "GDP/Capita",  "Footprint")
+      assert(Helper.roundTo(reg.intersect, 3) == 1.199)
+      assert(Helper.roundTo(reg.slope, 6) == 0.000148)
+      assert(Helper.roundTo(reg.estimate(8000), 3) == 2.383)
     }
   }
 
-  test("R-squared", Correl) {
+  test("R-squared for simple linear regression", Regression) {
     new EnvCorrel {
-      val rsquared = math.pow(data2.pearson("Footprint", "GDP/Capita"), 2)
-      assert(Helper.roundTo(rsquared, 3) == 0.349)
+      val reg = regression.SimpleOLS.build(data2, "GDP/Capita",  "Footprint")
+      assert(Helper.roundTo(reg.rsq, 3) == 0.349)
     }
   }
  
@@ -214,17 +212,17 @@ class ScalastatSuite extends FunSuite with Tags {
     }
   }
 
-  test("Pearson Matrix", CorrelMat, NoJenkins) {
+  test("Pearson Matrix", CorrelMat, Slow, NoJenkins) {
     new EnvQOG {
       val filtered = qog $ ("rsf_pfi", "wef_ptp", "wdi_gdpcapcon2010", "undp_hdi", "gle_pop")
       println(filtered.pearsonMatrix)
     }
   }
 
-  test("ntiles", Aggr, NoJenkins) {
+  test("ntiles", Aggr, Slow, NoJenkins) {
     new EnvQOG {
       val filtered = qog $ ("year", "cname", "undp_hdi") filter ("year", 2010)
-      assert(filtered.ntile("undp_hdi", 10, 0.85) == 9)
+      assert(filtered.quantile("undp_hdi", 10, 0.85) == 9)
     }
   }
 }

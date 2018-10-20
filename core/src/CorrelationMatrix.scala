@@ -1,10 +1,11 @@
-package eu.seitzal.scalastat
+package eu.seitzal.insight
 
 /**
- * Represents a matrix containing correlation measures (e.g. Pearson's r) between a number of variables.
- * Usually, a correlation matrix would be created by calling the source dataset's responsible generator function.
+ * Represents a matrix containing correlation measures
+ * (e.g. Pearson's r) between a number of variables.
  */
-class CorrelationMatrix(val vnames : Vector[String], val values : Vector[Vector[Double]]) {
+class CorrelationMatrix(val vnames : Vector[String], 
+    val values : Vector[Vector[Double]]) {
 
   /** 
    * Returns the correlation between two variables.
@@ -25,17 +26,26 @@ class CorrelationMatrix(val vnames : Vector[String], val values : Vector[Vector[
 
     val padLength = 
       for (col <- 0 until vnames.length) 
-      yield ((vnames(col) :: values(col).map(_.toString).toList).foldLeft("")(compare)).length
+      yield ((vnames(col) :: values(col).map(_.toString).toList)
+        .foldLeft("")(compare)).length
 
     val padLengthVname = (vnames.foldLeft("")(compare)).length
 
     def pad(s : String, col : Int) =
-      s + (for (i <- 0 until (padLength(col) - s.length + 2)) yield " ").mkString
+      s + (
+        for (i <- 0 until (padLength(col) - s.length + 2)) yield " "
+      ).mkString
 
     def padVname(vname : String) =
-      vname + (for (i <- 0 until (padLengthVname - vname.length + 2)) yield " ").mkString
+      vname + (
+        for (i <- 0 until (padLengthVname - vname.length + 2)) yield " "
+      ).mkString
 
-    val headline = padVname("") + " " + (for (i <- 0 until vnames.length) yield pad(vnames(i), i)).mkString + "\n\n"
+    val headline = 
+      padVname("") + " " + (
+        for (i <- 0 until vnames.length) yield pad(vnames(i), i)
+      ).mkString + "\n\n"
+
     val body = for (row <- 0 until vnames.length) yield {
       padVname(vnames(row)) + " " + (
         for (col <- 0 until vnames.length)

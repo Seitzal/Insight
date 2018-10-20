@@ -1,4 +1,4 @@
-package eu.seitzal.scalastat.plot
+package eu.seitzal.insight.plot
 
 import java.awt._
 import java.awt.event._
@@ -45,7 +45,7 @@ abstract class Plot {
 
 /**
  * Dummy class for fast creation of simple, custom plots.
- * For more complex applications, it is preferred to create a new child class of [[eu.seitzal.scalastat.plot.Plot]]
+ * For more complex applications, it is preferred to create a new child class of [[eu.seitzal.insight.plot.Plot]]
  */
 class CustomPlot (p_width : Int, p_height : Int, p_title : String, drawer : (Graphics) => Unit) extends Plot {
   override val width = p_width

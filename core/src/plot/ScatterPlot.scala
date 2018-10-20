@@ -1,14 +1,14 @@
-package eu.seitzal.scalastat.plot
+package eu.seitzal.insight.plot
 
 import java.awt._
-import eu.seitzal.scalastat._
+import eu.seitzal.insight._
 
 /**
  *  Draw a scatter plot on a Swing/AWT frame.
  *  This is useful for visualising correlation patterns between variables,
  *  and deciding which methods to use for further analysis.
  */
-class ScatterPlot(xcol : NumCol, ycol : NumCol, xname : String, yname : String, symbol : (Graphics, Int, Int) => Unit) extends Plot {
+class ScatterPlot(xcol : NumSeries, ycol : NumSeries, xname : String, yname : String, symbol : (Graphics, Int, Int) => Unit) extends Plot {
   
   // TODO: Make these changeable parameters
   override val width = 600
@@ -16,7 +16,7 @@ class ScatterPlot(xcol : NumCol, ycol : NumCol, xname : String, yname : String, 
   override val title = "Scatterplot: " + xname + " => " + yname
   
   // Cut blanks on either variable
-  protected val cleancols = xcol commonExistingCols ycol
+  protected val cleancols = xcol commonExisting ycol
   protected val cleandata = xcol commonExistingValues ycol
   protected val xs = cleandata._1
   protected val ys = cleandata._2
@@ -95,8 +95,8 @@ object ScatterPlot {
    * Creates a scatterplot from two variables contained within the same dataset.
    * This can be called in the following short syntax:
    * <pre><code>ScatterPlot(dataset, "first variable", "second variable")</code></pre>
-   * @param symbol The method to draw a data point at the screen coordinates (X, Y). Presets can be found in [[eu.seitzal.scalastat.plot.Symbol]]. Default is a small x.
+   * @param symbol The method to draw a data point at the screen coordinates (X, Y). Presets can be found in [[eu.seitzal.insight.plot.Symbol]]. Default is a small x.
    */
-  def apply(dataset : Dataset, cname1 : String, cname2 : String, symbol : (Graphics, Int, Int) => Unit = Symbol.X_SMALL) = 
+  def apply(dataset : DataFrame, cname1 : String, cname2 : String, symbol : (Graphics, Int, Int) => Unit = Symbol.X_SMALL) = 
     new ScatterPlot(dataset.num(cname1), dataset.num(cname2), cname1, cname2, symbol)
 } 
