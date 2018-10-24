@@ -6,7 +6,7 @@ same standards as more established systems like Pandas or R, although it can
 already do some of your everyday data tasks.
 
 # Installation
-The simplest way to get the latest build of Insight is from my [Jenkins](http://jenkins.seitzal.eu/Insight/).
+The simplest way to get the latest build of Insight is from my [Jenkins](http://jenkins.seitzal.eu/job/Insight/).
 You can also build it from source, using [Mill](http://github.com/lihaoyi/Mill).
 
 # Basic Usage
