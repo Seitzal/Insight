@@ -5,9 +5,9 @@ import eu.seitzal.funcsv.FunCSV
 
 /**
  * A table of data.
- * Each data frame consists of a number of named variables (columns) and their 
+ * Each data frame consists of a number of named variables (columns) and their
  * corresponding data series.
- * @param columns A map consisting of the data frame's variable names as keys 
+ * @param columns A map consisting of the data frame's variable names as keys
                   and their corresponding data columns as values.
  */
 class DataFrame (columns : Vector[(String, Series)]) {
@@ -46,7 +46,7 @@ class DataFrame (columns : Vector[(String, Series)]) {
         case _              => throw new InvalidSeriesException(coltuple._1)
       }
     }
-    orderedcolswithproperints    
+    orderedcolswithproperints
   }
 
   /**
@@ -70,6 +70,28 @@ class DataFrame (columns : Vector[(String, Series)]) {
    * @return The extracted data column as a series.
    */
   def apply(cname : String) = getCol(cname)
+
+  /**
+   * Extract a single data row / observation from the dataset.
+   * @param index The index of the requested row
+   * @return The extracted row as a map from column name to value.
+   *         Missing values are returned as "n.a.".
+   */
+  def getRow(index : Int) = columns.map {
+    case (cname, col) => col(index) match {
+      case Some(x) => (cname, x)
+      case None    => (cname, "n.a.")
+      case any     => (cname, any)
+    }
+  }
+
+  /**
+   * Extract a single data row / observation from the dataset.
+   * @param index The index of the requested row
+   * @return The extracted row as a map from column name to value.
+   *         Missing values are returned as "n.a.".
+   */
+  def apply(index : Int) = getRow(index)
 
   /**
    * Extract a single numeric data column from the dataset.
@@ -106,20 +128,20 @@ class DataFrame (columns : Vector[(String, Series)]) {
   }
 
   /**
-   * Removes a data column from the dataset and returns the resulting frame. 
+   * Removes a data column from the dataset and returns the resulting frame.
    * @param cname The variable name of the unwanted data column
    * @return The new dataset, which omits the specified column
    */
   def -(cname : String) =
     new DataFrame(columns.filter(t => t._1 != cname))
-  
+
   /**
    * Removes multiple data columns from the dataset and returns the resulting
    * frame.
    * @param cname The variable names of the unwanted data columns
    * @return The new dataset, which omits the specified columns
    */
-  def --(cnames : String*) = 
+  def --(cnames : String*) =
     new DataFrame(columns.filter(t => !cnames.contains(t._1)))
 
   /**
@@ -148,11 +170,11 @@ class DataFrame (columns : Vector[(String, Series)]) {
    * @param condition The predicate for filtering
    * @return The new data frame, which includes only rows matching the filter
    */
-  def filter(cname : String, condition : Double => Boolean) : DataFrame = 
+  def filter(cname : String, condition : Double => Boolean) : DataFrame =
     getCol(cname) match {
       case NumSeries(col) => {
         val rownums = for(
-          i <- 0 until col.length 
+          i <- 0 until col.length
           if col(i).isDefined && condition(col(i).getOrElse(0))
         ) yield i
         val newmap = for((n, c) <- columns) yield {
@@ -182,7 +204,7 @@ class DataFrame (columns : Vector[(String, Series)]) {
    * @param condition The value for filtering
    * @return The new data frame, which includes only rows matching the filter
    */
-  def filter(cname : String, value : Double) : DataFrame = 
+  def filter(cname : String, value : Double) : DataFrame =
     filter(cname, (x : Double) => x == value)
 
 
@@ -232,7 +254,7 @@ class DataFrame (columns : Vector[(String, Series)]) {
    * @param k The total number of classes
    */
   def aggregateByValue(cname : String, firstCeiling : Double, width : Double,
-      k : Int) = 
+      k : Int) =
     Aggregation.aggregateByValue(this, cname, firstCeiling, width, k)
 
   /**
@@ -272,7 +294,7 @@ class DataFrame (columns : Vector[(String, Series)]) {
 
   private object tabhelper {
     def longest(col : List[String], current : Int = 0) : Int = {
-      if(col.isEmpty) 
+      if(col.isEmpty)
         current
       else if(col.head.length > current)
         longest(col.tail, col.head.length)
@@ -297,7 +319,7 @@ class DataFrame (columns : Vector[(String, Series)]) {
   }
 
   /**
-   * A simple table representation of the data frame, 
+   * A simple table representation of the data frame,
    * with whitespace between values.
    */
   lazy val tab : String = {
@@ -327,20 +349,20 @@ class DataFrame (columns : Vector[(String, Series)]) {
       }).mkString
     )
     val rows = getRows.map(catrow)
-    "\n" + rows.head + "\n" + 
+    "\n" + rows.head + "\n" +
     (for(row <- rows.tail) yield row + "\n").mkString
   }
 
   /**
    * Sorts the data frame by one of its columns, using a chosen sort mode.
-   * @param cname The data column by which to sort the dataset. 
+   * @param cname The data column by which to sort the dataset.
    * @param mode The sorting mode. (Options in [[eu.seitzal.insight.SortMode]])
    * @return The sorted dataset.
    */
   def sort(cname : String, mode : SortMode = SortMode.ASCENDING) : DataFrame = {
     val heads = getRows.head
     val coln = (
-      for(i <- 0 until heads.length if heads(i) == cname) 
+      for(i <- 0 until heads.length if heads(i) == cname)
       yield i
     ).head
     val rows = getRows.tail
@@ -352,16 +374,16 @@ class DataFrame (columns : Vector[(String, Series)]) {
       case _         => throw new ColNotFoundException(cname)
     }
     mode match {
-      case SortMode.ASCENDING => 
+      case SortMode.ASCENDING =>
         DataFrame.fromRows(heads :: (newRows ++ undefinedRows))
-      case SortMode.DESCENDING => 
+      case SortMode.DESCENDING =>
         DataFrame.fromRows(heads :: (newRows.reverse ++ undefinedRows))
     }
   }
 
   /*-- Multicolumn function shortcuts --*/
 
-  /** 
+  /**
    *  Calculates the covariance of two variables in the data frame
    *  @param cname1 The name of the data column representing the first variable
    *  @param cname2 The name of the data column representing the second variable
@@ -369,8 +391,8 @@ class DataFrame (columns : Vector[(String, Series)]) {
   def cov(cname1 : String, cname2 : String) =
     num(cname1) cov num(cname2)
 
-  /** 
-   *  Calculates Pearson's correlation coefficient for two variables in the 
+  /**
+   *  Calculates Pearson's correlation coefficient for two variables in the
    *  data frame
    *  @param cname1 The name of the data column representing the first variable
    *  @param cname2 The name of the data column representing the second variable
@@ -378,12 +400,12 @@ class DataFrame (columns : Vector[(String, Series)]) {
   def pearson(cname1 : String, cname2 : String) =
     num(cname1) pearson num(cname2)
 
-  /** 
+  /**
    *  Calculates the partial correlation between two variables,
    *  while keeping a third variable constant.
    *  @param cname1 The name of the data column representing the first variable
    *  @param cname2 The name of the data column representing the second variable
-   *  @param cnameControl The name of the data column representing the 
+   *  @param cnameControl The name of the data column representing the
    *                      disturbing variable
    */
   def pearsonPartial(cname1 : String, cname2 : String,
@@ -401,9 +423,9 @@ class DataFrame (columns : Vector[(String, Series)]) {
     )
     def vec = (
       for (nc1 <- numcols) yield (
-        for (nc2 <- numcols) 
+        for (nc2 <- numcols)
         yield Helper.roundTo(
-          nc1._2.asInstanceOf[NumSeries] pearson 
+          nc1._2.asInstanceOf[NumSeries] pearson
           nc2._2.asInstanceOf[NumSeries], 5)
       ).toVector
     ).toVector
@@ -430,7 +452,7 @@ object DataFrame {
   }
 
   /**
-   * Attempts to create a dataset from a list of rows, 
+   * Attempts to create a dataset from a list of rows,
    * each row being itself a list of string-formatted values.
    */
   def fromRows(raw : List[List[String]]) : DataFrame = {

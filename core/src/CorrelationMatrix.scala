@@ -25,7 +25,7 @@ class CorrelationMatrix(val vnames : Vector[String],
       else s2
 
     val padLength = 
-      for (col <- 0 until vnames.length) 
+      for (col <- 0 until vnames.length)
       yield ((vnames(col) :: values(col).map(_.toString).toList)
         .foldLeft("")(compare)).length
 

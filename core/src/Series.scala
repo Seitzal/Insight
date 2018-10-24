@@ -20,14 +20,8 @@ trait Series {
    */
   def info : String
 
-}
-
-/**
- * Pseudo-object representing a nonexisting series
- */
-object NotFound extends Series {
-  val length = 0
-  val asStrList = Nil
-  val info = "Column not found."
-  override def toString = "Column not found."
+  /**
+   * Returns the value at the given index
+   */
+  def apply(index : Int) : Any
 }

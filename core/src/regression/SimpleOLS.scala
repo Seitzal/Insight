@@ -27,6 +27,7 @@ class SimpleOLS(independent : NumSeries, dependent : NumSeries) extends Regressi
    */
   def estimate(item : Double) : Double =
     slope * item + intersect
+
 }
 
 /** Companion object for the SimpleOLS class */

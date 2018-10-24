@@ -24,4 +24,6 @@ case class StrSeries (values : ParVector[String]) extends Series {
   def deriveStr(func : String => String) = 
     new StrSeries(values.map(func))
 
+  def apply(index : Int) = values(index)
+
 }

@@ -127,10 +127,20 @@ class TestMain extends FunSuite with Tags with EnvGen {
     }
   }
 
-  test("ntiles", Aggr, Slow, NoJenkins) {
+  test("quantiles", Aggr, Slow, NoJenkins) {
     new EnvQOG {
       val filtered = qog $ ("year", "cname", "undp_hdi") filter ("year", 2010)
       assert(filtered.quantile("undp_hdi", 10, 0.85) == 9)
+    }
+  }
+
+  test("row extraction") {
+    new EnvMissingVals {
+      assert(data(0) == Vector("A" -> 1, "B" -> 3.5, "C" -> 12))
+      assert(data(1) == Vector("A" -> "n.a.", "B" -> 3, "C" -> 0.4))
+      assertThrows[IndexOutOfBoundsException] {
+        data(6)
+      }
     }
   }
 }

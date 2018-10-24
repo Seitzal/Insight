@@ -9,6 +9,12 @@ import scala.collection.parallel.immutable.ParVector
 case class NumSeries (values : ParVector[Option[Double]]) extends Series {
 
   /**
+   * Returns the value at the given index.
+   * None if the value doesn't exist.
+   */
+  def apply(index : Int) = values(index)
+
+  /**
    * The number of values in the series, including blanks.
    */
   val length = values.length
@@ -89,7 +95,9 @@ case class NumSeries (values : ParVector[Option[Double]]) extends Series {
       
   override def toString = {
     val withtrailingcomma = (for(e <- asStrList) yield e + ", ").mkString
-    withtrailingcomma.substring(0, withtrailingcomma.length - 2)
+    "NumSeries (" +
+    withtrailingcomma.substring(0, withtrailingcomma.length - 2) +
+    ")"
   }
 
   /**
@@ -406,5 +414,6 @@ case class NumSeries (values : ParVector[Option[Double]]) extends Series {
  * <pre><code>val myNumSeries = NumSeries(2, 5, 3.24, -12)</code></pre>
  */
 object NumSeries {
-  def apply(values : Double*) = new NumSeries(values.map(Option(_)).toVector.par)
+  def apply(values : Double*) =
+    new NumSeries(values.map(Option(_)).toVector.par)
 }
