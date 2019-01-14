@@ -446,7 +446,7 @@ object DataFrame {
    * @param path The path to the CSV file.
    * @return A dataset object containing the data from the file.
    */
-  def readCSV(path : String) : DataFrame = {
+  def fromCSV(path : String) : DataFrame = {
     fromRows(FunCSV.decodeFile(path))
 
   }
@@ -471,7 +471,7 @@ object DataFrame {
    */
   private def parseCol(raw : List[String]) : Series = {
     def tryconvert (item : String) : Option[Option[Double]] =
-      if (item == "" || item == "-") Option(None)
+      if (item == "" || item == "-" || item.equalsIgnoreCase("na")) Option(None)
       else {
         val tryconvert2 = Try{item.toDouble}.toOption
         tryconvert2 match {

@@ -14,6 +14,7 @@ trait Tags {
   object CorrelMat extends Tag("CorrelMat")
   object MissingVals extends Tag("MissingVals")
   object Export extends Tag("Export")
+  object Lazy extends Tag("Lazy")
 
   // Utility tags
   object NoJenkins extends Tag("NoJenkins")

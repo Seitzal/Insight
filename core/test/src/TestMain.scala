@@ -82,15 +82,6 @@ class TestMain extends FunSuite with Tags with EnvGen {
     }
   }
 
-  test("Pearson's r for large dataset", Correl, NoJenkins, Slow) {
-    new EnvQOG {
-      val r = qog.pearson("rsf_pfi", "wef_ptp")
-      assert(Helper.roundTo(r, 4) == -0.0799)
-      val r2 = qog.pearson("wdi_gdpcapcon2010", "undp_hdi")
-      assert(Helper.roundTo(r2, 3) == 0.69)
-    }
-  }
-
   test("Partial correlation", Correl) {
     new EnvCorrel {
       val xyunderz = data1.pearsonPartial("X", "Y", "Z")
@@ -142,5 +133,24 @@ class TestMain extends FunSuite with Tags with EnvGen {
         data(6)
       }
     }
+  }
+
+  test("Lazy frame, load columns", Lazy) {
+    val qog = LazyFrame.fromCSV("testdata/qog_bas_ts_jan18.csv")
+    val undp_hdi = qog.num("undp_hdi")
+    assert(undp_hdi.length == 15192)
+    assert(undp_hdi.existingLength == 4259)
+    assertThrows[NotNumericException] {
+      qog.num("cname")
+    }
+    assert(qog.str("cname").length == 15192)
+  }
+
+    test("lazy frame, Pearson's r for large dataset", Correl, Lazy) {
+    val qog = LazyFrame.fromCSV("testdata/qog_bas_ts_jan18.csv")
+    val r = qog.num("rsf_pfi") pearson qog.num("wef_ptp")
+    assert(Helper.roundTo(r, 4) == -0.0799)
+    val r2 = qog.num("wdi_gdpcapcon2010") pearson qog.num("undp_hdi")
+    assert(Helper.roundTo(r2, 3) == 0.69)
   }
 }
