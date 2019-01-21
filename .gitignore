@@ -2,3 +2,4 @@ lib/*
 out/*
 test-outputs/*
 *.log
+core/src/Core.scala

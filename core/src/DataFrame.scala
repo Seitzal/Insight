@@ -322,7 +322,7 @@ class DataFrame (columns : Vector[(String, Series)]) {
    * A simple table representation of the data frame,
    * with whitespace between values.
    */
-  lazy val tab : String = {
+  def tab : String = {
     def catrow(row : List[String]) = (for(i <- 0 until row.length) yield {
       val word = row(i)
       word + tabhelper.whitespace(word, i)
@@ -335,7 +335,7 @@ class DataFrame (columns : Vector[(String, Series)]) {
   /**
    * A table representation of the data frame, with lines between values.
    */
-  lazy val tabulate : String = {
+  def tabulate : String = {
     def catrow(row : List[String]) = (
     "| "
     + (for(i <- 0 until row.length) yield {

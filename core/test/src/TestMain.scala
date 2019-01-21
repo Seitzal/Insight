@@ -143,7 +143,7 @@ class TestMain extends FunSuite with Tags with EnvGen {
     assertThrows[NotNumericException] {
       qog.num("cname")
     }
-    assert(qog.str("cname").length == 15192)
+    assert(qog("cname").length == 15192)
   }
 
     test("lazy frame, Pearson's r for large dataset", Correl, Lazy) {
@@ -152,5 +152,20 @@ class TestMain extends FunSuite with Tags with EnvGen {
     assert(Helper.roundTo(r, 4) == -0.0799)
     val r2 = qog.num("wdi_gdpcapcon2010") pearson qog.num("undp_hdi")
     assert(Helper.roundTo(r2, 3) == 0.69)
+  }
+
+  test("Contingency table", Freq) {
+    val data = read.csv("testdata/freq2.csv")
+    val table = new ContingencyTable(data("A"), data("B"))
+    assert(table.rowLabels.toList == List("1", "2", "3", "4", "5"))
+    assert(table.colLabels.toList == List("0", "1", "2"))
+    assert(table.rowTotal.toList == List(100, 85, 95, 130, 90))
+    assert(table.colTotal.toList == List(240, 140, 120))
+    assert(table.grandTotal == 500)
+    assert(Helper.round(table.rel("1", "0")) == 0.17)
+    assert(Helper.round(table.relRowTotal(0)) == 0.2)
+    assert(Helper.round(table.relColTotal(0)) == 0.48)
+    assert(Helper.round(table.rowProp("1", "0")) == 0.85)
+    assert(Helper.roundTo(table.colProp("1", "0"), 4) == 0.3542)
   }
 }

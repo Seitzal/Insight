@@ -56,12 +56,17 @@ class TestCLI extends FunSuite with Tags with EnvGen {
     }
   }
 
-    test("Missing Values", MissingVals, NoJenkins, HasOutput) {
+  test("Missing Values", MissingVals, NoJenkins, HasOutput) {
     new EnvMissingVals {
       val a = data.num("A")
       val b = data.num("B")
       val c = data.num("C")
       println(data.withRowNumbers.tab)
     }
+  }
+
+  test("Contingency table print", Freq, NoJenkins, HasOutput) {
+    val data = read.csv("testdata/freq2.csv")
+    println(new ContingencyTable(data("A"), data("B")))
   }
 }

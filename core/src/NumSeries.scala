@@ -90,7 +90,7 @@ case class NumSeries (values : ParVector[Option[Double]]) extends Series {
 
   def asStrList = (values map {
     case Some(value) => value.toString
-    case None        => "--"
+    case None        => "NA"
   }).seq.toList
       
   override def toString = {
@@ -403,7 +403,7 @@ case class NumSeries (values : ParVector[Option[Double]]) extends Series {
     new StrSeries (
       values.map {
         case Some(x) => func(x)
-        case None    => "-" 
+        case None    => "NA" 
       }
     )
 }

@@ -26,3 +26,6 @@ class MissingValueException(operation : String)
 class ColLengthException(operation : String) 
   extends Exception("Data series must contain the same number of values in " +
   "order to calculate " + operation)
+
+class BadValueException(label : String)
+  extends Exception("Factor does not contain value: " + label)

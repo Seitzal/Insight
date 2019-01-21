@@ -20,7 +20,7 @@ class LazyFrame(source : LazyFrameSource) {
    */
   private def csvParseRow(plain : String) : Vector[String] = {
     val len = plain.length
-    def iter(i : Int, escaped : Boolean, buffer : String, 
+    def iter(i : Int, escaped : Boolean, buffer : String,
         acc : Vector[String]) : Vector[String] =
       if (i == len) acc
       else if (plain.charAt(i) == '\"')
@@ -43,7 +43,7 @@ class LazyFrame(source : LazyFrameSource) {
    */
   private def csvParseRowForCell(plain : String, col : Int) : Option[String] = {
     val len = plain.length
-    def iter(i : Int, in_col : Int, escaped : Boolean, 
+    def iter(i : Int, in_col : Int, escaped : Boolean,
         buffer : String) : Option[String] =
       if (i == len)
         if (in_col == col)
@@ -76,7 +76,7 @@ class LazyFrame(source : LazyFrameSource) {
     iter(0, 0, false, "")
   }
 
-  /** 
+  /**
    * Loads a row of data from the source
    * @param index The index of the row. Row 0 contains the column names
    */
@@ -128,21 +128,21 @@ class LazyFrame(source : LazyFrameSource) {
    * encoding missing values as empty options.
    * Throws an exception if it encounters a non-numeric value.
    */
-  private def processNum(cname : String)(item : String) : Option[Double] = 
+  private def processNum(cname : String)(item : String) : Option[Double] =
     if (item.equals("") || item.equals("-") ||
         item.equalsIgnoreCase("na"))
       None
-    else Try{item.toDouble} match {
+    else Try(item.toDouble) match {
       case Success(x) => Some(x)
       case Failure(e) => throw new NotNumericException(cname)
     }
-  
+
   /**
    * Wraps a buffer of numeric options into a numeric series.
    */
   private def wrapNum(buffer : ArrayBuffer[Option[Double]]) =
     NumSeries(buffer.toVector.par)
-  
+
   /**
    * Extract a single numeric data column from the dataset.
    * @param cname The variable name of the requested data column.
@@ -158,7 +158,7 @@ class LazyFrame(source : LazyFrameSource) {
    */
   private def wrapStr(buffer : ArrayBuffer[String]) =
     StrSeries(buffer.toVector.par)
-  
+
   /**
    * Extract a single non-numeric data column from the dataset.
    * Numeric columns will be converted before being returned.
@@ -168,6 +168,19 @@ class LazyFrame(source : LazyFrameSource) {
   def str(cname : String) : StrSeries = cnames.indexOf(cname) match {
     case -1    => throw new ColNotFoundException(cname)
     case index => loadCol(index, str => str, wrapStr)
+  }
+
+  /**
+   * Extract a single data column from the dataset.
+   * @param cname The variable name of the requested data column.
+   * @return The extracted data column as a series.
+   */
+  def apply(cname : String) : Series = {
+    Try(num(cname)) match {
+      case Success(nums) => nums
+      case Failure(e : NotNumericException) => str(cname)
+      case Failure(e) => throw e
+    }
   }
 
   /**
