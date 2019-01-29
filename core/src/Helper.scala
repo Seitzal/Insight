@@ -1,5 +1,8 @@
 package eu.seitzal.insight
 
+import java.util.Calendar
+import java.text.SimpleDateFormat
+
 object Helper {
 
   def isInt(x : Option[Double]) = (x.getOrElse(0.0).toInt - x.getOrElse(0.0) == 0.0)
@@ -18,6 +21,12 @@ object Helper {
     if(l.isEmpty) true
     else if(acc.contains(l.head)) false
     else nodoubles(l.tail, l.head :: acc)
+  }
+
+  def timestamp = {
+      val time = Calendar.getInstance().getTime()
+      val format = new SimpleDateFormat("yyyy/MM/dd, HH:mm:ss z")
+      format.format(time)
   }
 
 }

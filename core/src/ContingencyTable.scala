@@ -98,7 +98,7 @@ class ContingencyTable(rows : Series, cols : Series) {
 
   lazy val grandTotal = rowTotal.sum
 
-  private lazy val relCells =
+  lazy val relCells =
     cells.map(row => row.map(cell => cell.toDouble / grandTotal))
 
   lazy val relRowTotal = rowTotal.map(rs => rs.toDouble / grandTotal)
