@@ -1,7 +1,7 @@
 package eu.seitzal.insight
 
 import scala.collection.parallel.immutable.ParVector
-
+import scala.util.{Try, Success, Failure}
 /**
  * Represents a data series containing not only numeric values.
  * Any numeric values contained are treated as non-numeric
@@ -25,5 +25,17 @@ case class StrSeries (values : ParVector[String]) extends Series {
     new StrSeries(values.map(func))
 
   def apply(index : Int) = values(index)
+
+  def toNumSeries = NumSeries(values.map(value => Try{value.toDouble} match {
+    case Success(x) => Some(x)
+    case Failure(e) => {
+      if (value.equalsIgnoreCase("na") ||
+          value.equals("--") ||
+          value.equals("-") ||
+          value.equals(""))
+        None
+      else throw new NotNumericException("series")
+    }
+  }))
 
 }

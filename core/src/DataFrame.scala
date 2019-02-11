@@ -366,8 +366,8 @@ class DataFrame (columns : Vector[(String, Series)]) {
       yield i
     ).head
     val rows = getRows.tail
-    val definedRows = rows.filter(row => row(coln) != "--")
-    val undefinedRows = rows.filter(row => row(coln) == "--")
+    val definedRows = rows.filter(row => !row(coln).equalsIgnoreCase("NA"))
+    val undefinedRows = rows.filter(row => !row(coln).equalsIgnoreCase("NA"))
     val newRows = getCol(cname) match {
       case NumSeries(v) => definedRows.sortBy(row => row(coln).toDouble)
       case StrSeries(v) => definedRows.sortBy(row => row(coln))
