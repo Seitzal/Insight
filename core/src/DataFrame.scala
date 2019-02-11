@@ -1,7 +1,6 @@
 package eu.seitzal.insight
 
 import scala.util.Try
-import eu.seitzal.funcsv.FunCSV
 
 /**
  * A table of data.
@@ -439,17 +438,6 @@ class DataFrame (columns : Vector[(String, Series)]) {
  * Contains methods for creating dataset objects from various sources.
  */
 object DataFrame {
-
-  /**
-   * Attempts to read a dataset from a CSV file at the specified location.
-   * The first line of the CSV is assumed to contain the variable names.
-   * @param path The path to the CSV file.
-   * @return A dataset object containing the data from the file.
-   */
-  def fromCSV(path : String) : DataFrame = {
-    fromRows(FunCSV.decodeFile(path))
-
-  }
 
   /**
    * Attempts to create a dataset from a list of rows,

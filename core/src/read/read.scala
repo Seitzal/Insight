@@ -1,7 +1,5 @@
 package eu.seitzal.insight
 
-import eu.seitzal.funcsv._
-
 package object read {
 
   /**
