@@ -9,7 +9,7 @@ import scala.util.Try
  * @param columns A map consisting of the data frame's variable names as keys
                   and their corresponding data columns as values.
  */
-class DataFrame (columns : Vector[(String, Series)]) {
+class DataFrame (val columns : Vector[(String, Series)]) {
 
   /*--- COLUMN-BASED FUNCTIONS ---*/
 

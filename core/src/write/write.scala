@@ -16,4 +16,9 @@ package object write {
     builder.export(path)
   }
 
+  def csv(data : DataFrame, path : String) : Unit = {
+    val writer = new CSVWriter(path)
+    writer.writeDataFrame(data)
+  }
+
 }

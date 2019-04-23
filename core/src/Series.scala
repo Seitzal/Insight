@@ -24,4 +24,5 @@ trait Series {
    * Returns the value at the given index
    */
   def apply(index : Int) : Any
+
 }
